@@ -1,0 +1,261 @@
+---
+title: "数字签名"
+---
+
+## 概述
+数字签名处理节点，支持多种加密算法生成数字签名。通过配置不同的签名算法、内容编码和密钥，可以实现安全的数据签名和验证功能，适用于API认证、数据完整性校验等场景。
+功能特性
+- 多种签名算法：支持HMAC、MD5、SHA系列等多种签名算法
+- 灵活编码支持：支持Base64、Hex、PlainText等多种编码格式
+- 密钥管理：支持明文和编码格式的密钥输入
+- 安全签名：提供数据完整性和认证功能
+- 标准输出：支持多种格式的签名结果输出
+支持的签名算法
+HMAC系列（带密钥的哈希）
+- HmacMD5：HMAC-MD5算法
+- HmacSHA1：HMAC-SHA1算法
+- HmacSHA224：HMAC-SHA224算法
+- HmacSHA256：HMAC-SHA256算法（推荐）
+- HmacSHA384：HMAC-SHA384算法
+- HmacSHA512：HMAC-SHA512算法
+哈希算法（无密钥）
+- MD5：MD5哈希算法
+- SHA-1：SHA-1哈希算法
+- SHA-224：SHA-224哈希算法
+- SHA-256：SHA-256哈希算法
+- SHA-384：SHA-384哈希算法
+- SHA-512：SHA-512哈希算法
+## 配置参数
+SignatureAction
+算法配置
+- alg：签名算法（必需）
+- type：签名方式（可选）
+内容配置
+- content：待签名内容
+- contentEncode：内容编码格式（PlainText/Base64/Hex，默认PlainText）
+密钥配置（HMAC算法需要）
+- secret：签名密钥
+- keyEncode：密钥编码格式（PlainText/Base64/Hex，默认PlainText）
+输出配置
+- encode：结果编码格式（Base64/Hex，默认PlainText）
+使用方法
+1. HMAC-SHA256签名
+
+```json
+{
+  "alg": "HmacSHA256",
+  "content": "Hello World",
+  "contentEncode": "PlainText",
+  "secret": "my-secret-key",
+  "keyEncode": "PlainText",
+  "encode": "Base64"
+}
+```
+
+2. MD5哈希
+
+```json
+{
+  "alg": "MD5",
+  "content": "test data",
+  "contentEncode": "PlainText",
+  "encode": "Hex"
+}
+```
+
+3. SHA-256哈希
+
+```json
+{
+  "alg": "SHA-256",
+  "content": "important data",
+  "contentEncode": "PlainText",
+  "encode": "Base64"
+}
+```
+
+## 使用Base64编码的内容
+
+```json
+{
+  "alg": "HmacSHA256",
+  "content": "SGVsbG8gV29ybGQ=",
+  "contentEncode": "Base64",
+  "secret": "c2VjcmV0",
+  "keyEncode": "Base64",
+  "encode": "Hex"
+}
+```
+
+5. API签名生成
+
+```json
+{
+  "alg": "HmacSHA256",
+  "content": "${requestBody}",
+  "secret": "${apiSecret}",
+  "encode": "Base64"
+}
+```
+
+编码格式说明
+PlainText - 明文
+- 输入：直接使用字符串
+- 输出：直接输出字节数组的字符串表示
+Base64 - Base64编码
+- 输入：Base64编码的字符串
+- 输出：Base64编码的签名结果
+Hex - 十六进制
+- 输入：十六进制字符串（如"48656C6C6F"）
+- 输出：十六进制格式的签名结果
+执行逻辑
+参数验证
+## 检查算法是否支持
+- 验证必需参数（content、alg）
+## 检查HMAC算法是否有密钥
+数据转换
+## 根据contentEncode转换内容为字节数组
+## 根据keyEncode转换密钥为字节数组（HMAC算法）
+## 执行签名算法计算
+结果编码
+## 将签名字节数组转换为指定编码格式
+- 返回编码后的字符串结果
+输出结果
+字符串格式
+返回计算出的签名字符串，格式根据encode参数决定：
+
+"签名结果字符串"
+
+## 应用场景
+1. API认证签名
+
+HttpAction (准备请求数据)
+
+├── SignatureAction (生成签名)
+
+└── HttpAction (发送带签名的请求)
+
+## 数据完整性校验
+
+FileUpload (上传文件)
+
+├── SignatureAction (计算文件哈希)
+
+└── Database (保存哈希值)
+
+## 安全通信
+
+DataProcess (准备数据)
+
+├── SignatureAction (数据签名)
+
+└── EncryptAction (数据加密)
+
+## 区块链应用
+
+TransactionData (交易数据)
+
+├── SignatureAction (生成交易哈希)
+
+└── BlockChain (提交交易)
+
+高级功能
+动态内容签名
+支持使用变量作为签名内容：
+
+```json
+{
+  "alg": "HmacSHA256",
+  "content": "${userId}_${timestamp}_${action}",
+  "secret": "${userSecret}",
+  "encode": "Base64"
+}
+```
+
+多重签名
+结合循环节点实现多重签名：
+
+Loop (遍历数据块)
+
+├── SignatureAction (对每个块签名)
+
+└── ArrayAction (收集签名结果)
+
+密钥轮换
+支持动态密钥：
+
+```json
+{
+  "alg": "HmacSHA256",
+  "content": "${message}",
+  "secret": "${currentKey}",
+  "keyEncode": "Base64"
+}
+```
+
+安全考虑
+密钥管理
+- 密钥应妥善保管，避免硬编码
+- 定期轮换密钥
+- 使用强密钥（足够长度和复杂度）
+算法选择
+- 生产环境：推荐使用SHA-256或更高强度算法
+- 遗留系统：可使用MD5，但不推荐用于安全关键场景
+- 性能考虑：SHA-256在安全性和性能间取得良好平衡
+性能优化
+算法性能对比
+- MD5：最快，但安全性最低
+- SHA-1：较快，但已不推荐
+- SHA-256：安全性和性能平衡
+- SHA-512：最安全，但性能较低
+大数据处理
+- 对于大文件，建议分块签名
+- 使用流式处理避免内存溢出
+## 最佳实践
+## 算法选择
+- 根据安全需求选择适当的算法强度
+- HMAC算法提供更高安全性
+- 避免在生产环境中使用已知弱算法
+## 编码配置
+- 根据下游系统要求选择合适的编码格式
+- Base64适用于大多数网络传输场景
+- Hex适用于数据库存储
+## 密钥管理
+- 使用环境变量或配置中心管理密钥
+- 避免在代码中硬编码密钥
+- 定期更新密钥
+## 错误处理
+- 
+## 验证输入参数的有效性
+- 处理编码转换异常
+- 记录签名生成失败的情况
+调试和监控
+签名日志
+- 记录签名算法和参数（注意保护密钥）
+- 输出签名结果长度
+- 记录处理耗时
+安全监控
+- 监控签名生成频率
+- 检测异常签名请求
+- 审计密钥使用情况
+## 常见问题
+Q: HMAC和普通哈希算法有什么区别？
+A: HMAC算法使用密钥进行签名，提供认证功能；普通哈希算法只提供完整性校验。HMAC算法安全性更高，推荐用于需要认证的场景。
+Q: 如何选择合适的编码格式？
+A: 根据使用场景选择：
+- 网络传输：Base64
+- 数据库存储：Hex
+- 人类可读：PlainText（仅用于调试）
+- 编程接口：Base64或Hex
+Q: 签名结果的长度是固定的吗？
+A: 取决于算法：
+- MD5：128位（32字符Hex）
+- SHA-1：160位（40字符Hex）
+- SHA-256：256位（64字符Hex）
+- SHA-512：512位（128字符Hex）
+Q: 支持自定义算法吗？
+A: 目前不支持自定义算法。系统内置了常用的标准算法。如需特殊算法，建议通过外部服务实现。
+Q: 如何验证签名？
+A: 要验证签名，需要使用相同的算法、内容、密钥重新计算签名，然后比较结果。系统不提供内置的验证功能。
+Q: 大文件签名有什么限制？
+A: 系统会将整个内容加载到内存，对于超大文件可能导致内存溢出。建议对大文件进行分块签名或使用文件哈希。

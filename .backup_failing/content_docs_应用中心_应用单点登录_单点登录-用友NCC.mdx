@@ -1,0 +1,131 @@
+---
+title: "单点登录-用友NCC"
+source_portal: "https://alidocs.dingtalk.com/i/p/ZRPG27Zjye9NOzBp"
+source_preview: "https://alidocs.dingtalk.com/preview/content/word?timestamp=1772677232468&docKey=YdgOk27opWeKKq4B&scene=publish"
+docKey: "YdgOk27opWeKKq4B"
+exported_at: "2026-03-05T02:20:32Z"
+path:
+  - 应用中心
+  - 应用单点登录
+  - 单点登录-用友NCC
+content_hash: "998c60c37442bda8b09937b9604665e3ab6b29f5"
+---
+
+# 单点登录-用友NCC
+
+一、说明
+本文档详细介绍如何配置集成平台与用友NCC系统之间的免登集成，实现统一身份认证和无缝登录体验。
+二、前置条件
+在开始配置前，请确保以下条件已满足：
+1. 用友NCC白名单配置：
+○
+NCC后台配置文件已添加白名单配置
+○
+配置文件路径：${HOME}/ierp/sf/nccssoConfig.xml
+2. 数据库OAuth配置：
+○
+用友NCC数据库中的sm_oauth_security表已插入必要数据
+○
+包含字段：CLIENT_ID, CLIEN_NAME, CLIENT_SECURITY, PK_OAUTH_SECURITY
+三、免登配置
+1. 添加NCC应用
+在集成平台的应用中心搜索NCC并添加：
+
+
+2. 配置应用参数
+将NCC的配置信息填入集成平台：
+
+
+
+配置项详细说明：
+a. 数据源名称：NCC系统管理后台创建的数据源名称
+b. 获取AccessToken的地址：http://${IP:PORT}/service/genThirdPartyAccessToken
+●
+示例：http://ncc.bio-zdmc.com:9090/service/genThirdPartyAccessToken
+c. 单点登录入口地址：http://${IP:PORT}/nccloud/resources/uap/rbac/thirdpartylogin/main/index.html
+●
+示例：http://ncc.bio-zdmc.com:9090/nccloud/resources/uap/rbac/thirdpartylogin/main/index.html
+d. 第三方系统编码：数据库中插入的CLIENT_ID
+e. 密钥：数据库中插入的CLIENT_SECURITY
+f. Redirect URI：http://${IP:PORT}/nccloud
+●
+示例：http://ncc.bio-zdmc.com:9090/nccloud
+g. 多语语种：zh-cn
+h. 账套编码：NCC系统的系统编码，如下图所示
+i. 用户标识：根据客户具体场景配置，需要与NCC的用户编码字段对应
+
+
+四、测试验证
+配置完成后，通过浏览器访问"登录配置中的访问地址"，完成集成平台的认证流程，验证是否能成功登录到NCC系统界面：
+
+
+附录
+1. 用友NCC单点登录后台配置示例
+以下是NCC系统nccssoConfig.xml文件的配置示例（配置后需重启服务）：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+&lt;NCCSSOConfigVO&gt;
+  <authenticator id="default" classname="ncc.sso.bs.DefaultNCCSSOAuthenticator">
+    &lt;regTimeOut&gt;200</regTimeOut>
+    <listParam key="IPAddress">
+      &lt;string&gt;127.0.0.1</string>
+      &lt;string&gt;123.57.151.34</string>
+    </listParam>
+  </authenticator>
+  <authenticator id="type" classname="nc.sso.bs.AAA">
+    &lt;regTimeOut&gt;200</regTimeOut>
+    <listParam key="IPAddress">
+      &lt;string&gt;127.0.0.1</string>
+    </listParam>
+  </authenticator>
+</NCCSSOConfigVO>
+```
+2. 数据库配置示例
+在NCC系统数据库中执行的SQL示例：
+
+```sql
+INSERT INTO sm_oauth_security (CLIENT_ID, CLIEN_NAME, CLIENT_SECURITY, PK_OAUTH_SECURITY) 
+VALUES ('dingding', 'dingding', '1d07223b28fb44a6b290', '0001AA10000000008DDC');
+```
+注意：配置中的IP:PORT、CLIENTID和CLIENTSECURITY等信息需要根据实际环境进行替换。
+常见问题
+1. 配置后无法登录：
+○
+检查NCC白名单中是否包含集成平台的IP地址
+○
+验证CLIENTID和CLIENTSECURITY配置是否正确
+○
+确认用户标识的映射关系是否准确
+2. 登录超时问题：
+○
+检查NCC配置文件中的regTimeOut参数是否合理
+○
+确认网络连接稳定性
+3. 用户权限问题：
+○
+确认NCC系统中用户是否已分配正确的权限
+○
+检查用户状态是否正常
+参考文档
+●
+钉钉工作台触发单点登录参考文档：
+钉钉工作台应用免登
+
+●
+IDP发起单点登录拼接地址参考文档：
+单点登录（SSO）链接拼接指南
+
+大纲
+单点登录-用友NCC
+一、说明
+二、前置条件
+三、免登配置
+1. 添加NCC应用
+2. 配置应用参数
+四、测试验证
+附录
+1. 用友NCC单点登录后台配置示例
+2. 数据库配置示例
+常见问题
+参考文档

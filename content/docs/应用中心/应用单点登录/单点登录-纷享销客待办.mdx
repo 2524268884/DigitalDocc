@@ -1,0 +1,337 @@
+---
+title: "单点登录-纷享销客待办"
+---
+
+## 概述
+本文档详细介绍如何配置纷享销客与集成平台之间的待办消息免登功能。此功能允许用户在收到纷享销客待办消息后，点击待办消息可以无需重复登录即可直接进入相应的待办页面，极大地提升用户体验和工作效率。
+### 功能价值
+- 简化用户操作流程：用户点击待办消息后无需额外登录，直接进入待办处理页面
+- 提高工作效率：减少重复登录步骤，加快待办事项处理速度
+- 增强用户体验：流畅的操作体验，降低用户操作门槛
+- 支持多渠道应用：可应用于钉钉等多种消息推送渠道
+### 技术实现原理
+该功能通过纷享销客的"自定义认证服务商"功能实现，利用Java代码编写自定义认证逻辑，结合集成平台的身份认证服务，实现用户身份自动识别和无缝跳转至指定待办页面。
+## 前提条件
+在开始配置前，请确保满足以下条件：
+- 账号准备：
+  - 拥有纷享销客管理员账号，具备认证服务商配置权限
+  - 拥有集成平台管理员账号
+- 用户数据准备：
+  - 集成平台中已创建相应用户
+  - 纷享销客中已创建对应用户
+  - 关键：确保纷享销客用户的手机号与集成平台中对应用户的手机号保持一致
+- 技术要求：
+  - 对Java编程有基本了解，能够理解和修改示例代码
+  - 了解OAuth 2.0协议基本原理
+  - 对API调用有基本认识
+## 配置步骤
+### 纷享销客配置
+步骤一：创建自定义认证服务商
+## 以管理员身份登录纷享销客管理后台
+## 导航至"系统管理 → 认证服务商"模块
+- 点击"新增认证服务商"按钮
+## 选择提供商类型为"自定义认证服务商"
+
+
+- 填写基本信息：
+  - 名称：自定义（建议使用有意义的名称，如"待办免登"）
+  - URL后缀：自定义一个标识符（如"todo"），此标识符将用于后续应用的RedirectURIs配置
+步骤二：创建执行函数
+## 点击"新增执行函数"按钮
+
+
+- 填写函数基本信息：
+  - 代码名称：自定义Java代码文件的中文名称（如"待办免登认证函数"）
+  - API Name：Java文件名，建议使用英文（如"MobileToDo"）
+  - 命名空间：选择"认证提供商"
+  - 绑定对象：选择"不绑定对象"
+  - 描述：简要描述此函数的功能（如"实现待办消息免登功能"）
+
+
+步骤三：选择代码模板
+建议选择"空白模板"，以便完全自定义代码逻辑。
+
+
+步骤四：编写执行函数代码
+在代码编辑器中编写认证逻辑代码：
+
+
+关键代码部分需要修改：
+- **应用登录地址**：修改为集成平台的应用登录地址
+
+```javascript
+return "https://您的域名/iam/authorize?response_type=code&" +
+      "response_mode=query&" +
+      "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+      "redirect_uri=https%3A%2F%2F您的域名.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Ftodo&client_id=您的客户端ID&state="+continueUrl;
+```
+
+
+
+
+- **待办跳转逻辑**：根据待办消息传递的参数，处理跳转逻辑
+
+```java
+@Override
+String redirect(FunctionContext context, Map&lt;String, List&lt;String&gt;&gt; params) {
+    if(params["state"] != null && params["state"].size() > 0 && params["state"].get(0)!=""){
+        return params["state"].get(0);
+    }else{
+        // 默认跳转逻辑
+        String s = params["continue"].get(0);
+        String substring = params["continue"].get(0).substring(74, s.length());
+        return "https://www.fxiaoke.com/XV/UI/Home#objdetail/AccountObj/" + substring;
+    }
+}
+```
+
+
+
+示例：https://\{your-tenant\}.my.fxiaoke.com/oauth/sp/sso/todo?continue= 代办地址两次编码
+continue 参数可以修改，但是定义好之后就不能变
+不相同continue 的话 可以用task todo等，脚本中也会跟着变
+- **自动登出URL**：配置登出时跳转的地址
+
+```java
+@Override
+String logoffUrl(FunctionContext context) {
+    return "https://&lt;您的域名&gt;/iam/logout"
+}
+```
+
+
+
+- **用户信息处理**：处理集成平台与纷享销客之间的用户匹配
+注意：纷享销客登录的用户账号是不带"+86"前缀的手机号，而集成平台集成钉钉的用户手机号带有"+86"前缀，需要特殊处理以确保用户匹配
+
+```java
+String user = (String)o.content["phone_number"];
+if(user.size() == 15){
+    user = user.substring(4, 15); // 移除+86前缀
+}
+```
+
+
+
+第三方用户信息获取接口：数犀集成平台客户环境获取用户信息接口：https://&lt;您的域名&gt;/iam/userinfo
+- **用户信息获取接口**：修改为您的集成平台环境地址
+
+```java
+HttpResult o = (HttpResult) http.get("https://您的域名/iam/userinfo", ["Authorization": "Bearer "+accessToken]).getData();
+```
+
+步骤五：保存配置
+完成代码编辑后，点击保存按钮。系统将生成三个关键URL：
+- 单点登录地址
+- 回调地址
+- 登出地址
+
+
+### 集成平台配置
+步骤一：创建应用
+## 登录集成平台管理控制台
+- 导航至"应用管理"模块
+## 点击"新建应用"，创建用于纷享销客免登的应用
+
+步骤二：配置应用参数
+## 填写应用基本信息
+- 在RedirectURIs字段中，填入纷享销客生成的回调地址
+## 配置应用授权范围，确定哪些用户可以使用此应用
+- 点击保存完成配置
+
+
+### 待办消息推送配置
+向消息推送开发人员提供待办消息跳转URL，格式为：
+
+```plaintext
+https://您的域名.my.fxiaoke.com/oauth/sp/sso/todo?continue=待办页面URL两次编码
+```
+
+说明：continue参数是待办详情页的URL，需要进行两次URL编码。参数名称（如continue）可以根据需要修改为task、todo等，但修改后脚本中的参数名也需要同步修改。
+## 验证与测试
+### 功能测试流程
+## 在钉钉或其他平台接收纷享销客推送的待办消息
+- 点击待办消息链接
+## 系统自动跳转至集成平台认证
+## 认证成功后，自动跳转至相应的待办处理页面
+## 验证页面内容是否正确显示对应的待办事项
+### 日志查看
+配置完成后，可以通过纷享销客后台查看执行日志，验证配置是否正确：
+## 在纷享销客后台搜索框中输入"APL"
+- 查看自定义认证服务商代码的执行日志
+## 分析日志中的错误信息，确定问题所在
+
+
+
+
+
+
+## 常见问题(FAQ)
+### 配置问题
+Q1: 待办消息点击后无法正常跳转到集成平台
+A: 可能原因及解决方案：
+- 检查纷享销客中配置的应用登录地址是否正确
+- 验证URL中的client_id是否与集成平台应用一致
+- 确认redirect_uri是否正确编码
+Q2: 认证成功后未跳转到正确的待办页面
+A: 可能原因：
+- 检查redirect函数中的跳转逻辑是否正确
+- 确认continue参数是否正确传递并解析
+- 验证continue参数的URL编码是否正确（需两次编码）
+Q3: 用户认证失败，提示"找不到对应的用户"
+A: 这通常是由于用户匹配问题导致：
+- 确认纷享销客中用户的手机号与集成平台用户手机号一致
+- 检查代码中对手机号前缀（+86）的处理逻辑是否正确
+- 验证查询PersonnelObj时使用的字段名是否正确
+### 开发问题
+Q4: 如何调试自定义认证服务商代码？
+A: 可以通过以下方式进行调试：
+- 在代码中使用log.info()输出关键变量和状态
+- 通过纷享销客后台的APL日志查看执行情况
+- 根据日志信息定位和解决问题
+Q5: 如何处理不同类型的待办消息跳转？
+A: 可以通过continue参数传递不同的目标URL，并在redirect函数中进行判断：
+
+```java
+if(continueUrl.contains("AccountObj")) {
+    // 客户相关待办处理逻辑
+} else if(continueUrl.contains("OpportunityObj")) {
+    // 商机相关待办处理逻辑
+} else {
+    // 默认处理逻辑
+}
+```
+
+Q6: 代码中的clientid和clientsecret如何获取？
+A: 这些参数来自集成平台创建的应用：
+- client_id对应应用的Client ID
+- client_secret对应应用的Client Secret
+- 这些信息可在集成平台应用详情页查看
+## 代码示例
+### 待办免登完整代码示例
+代码示例1：
+
+```java
+/**
+ * @author 丁聪
+ * @codeName 销售合同
+ * @description 销售合同
+ * @createTime 2023-06-29
+ */
+
+
+
+
+/**
+ * @type classes
+ * @namespace custom_oauth_protocol
+ * @returntype
+ */
+class MobileHeTong implements AuthProviderPlugin {
+
+
+    /**
+     * 登录时打开 {租户域名}.my.fxiaoke.com 跳转的第三方url
+     */
+    @Override
+    String authorize(FunctionContext context, Map&lt;String, List&lt;String&gt;&gt; params) {
+        //返回给浏览器的第三方网站登录地址，具体参数内容请查阅第三方文档说明
+        return "https://&lt;您的域名&gt;/iam/authorize?" + "response_type=code&" +
+                "response_mode=query&" +
+                "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+                "redirect_uri=https%3A%2F%2F{your-tenant}.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Fmhetong&client_id={your-client-id}";
+    }
+
+
+    /**
+     * 第三方登录完成后的回调函数，一般用于获取用户信息
+     * @param params 第三方回调时，URL的参数
+     * @return 返回纷享系统的员工ID
+     */
+    @Override
+    Integer callback(FunctionContext context, Map&lt;String, List&lt;String&gt;&gt; params) {
+        //租户临时授权模式，如果有其他模式，请阅读第三方文档
+        String token = getAccessToken(params);
+```
+
+代码示例2：
+
+```java
+/**
+ * @author 丁聪
+ * @codeName 待办名称
+ * @description 创建模式
+ * @createTime 2023-07-06
+ */
+
+
+
+
+/**
+ * @type classes
+ * @namespace custom_oauth_protocol
+ * @returntype
+ */
+class MobileToDo implements AuthProviderPlugin {
+
+
+     /**
+     * 登录时打开 {租户域名}.my.fxiaoke.com 跳转的第三方url
+     */
+    @Override
+    String authorize(FunctionContext context, Map&lt;String, List&lt;String&gt;&gt; params) {
+
+        String continueUrl ="";
+        if(params["continue"] != null){
+          continueUrl  = params["continue"].get(0);
+        }
+
+        //返回给浏览器的第三方网站登录地址，具体参数内容请查阅第三方文档说明
+        return "https://&lt;您的域名&gt;/iam/authorize?response_type=code&" +
+                "response_mode=query&" +
+                "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+                "redirect_uri=https%3A%2F%2F{your-tenant}.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Ftodo&client_id={your-client-id}&state="+continueUrl;
+    }
+
+
+    /**
+     * 第三方登录完成后的回调函数，一般用于获取用户信息
+配置完成后，会生成对应的回调，登录，登出地址；配置到数犀集成平台后台即可
+```
+## 最佳实践
+### 安全建议
+## 参数安全处理：
+  - 对所有用户输入进行严格验证和过滤
+  - 防止SQL注入和XSS攻击
+  - 避免在日志中打印敏感信息
+## 凭证保护：
+  - 不要在代码中硬编码client_secret等敏感信息
+  - 定期更新应用凭证
+  - 限制应用权限范围
+## 异常处理：
+  - 完善异常处理逻辑，提供友好的错误提示
+  - 记录详细的错误日志，便于问题排查
+  - 
+## 设置合理的超时和重试策略
+### 性能优化
+## 减少API调用：
+  - 优化认证流程，减少不必要的API调用
+  - 考虑添加缓存机制，减少重复请求
+## 优化查询：
+  - 确保PersonnelObj查询使用索引字段
+  - 只查询必要的字段，减少数据传输量
+## 提高响应速度：
+  - 
+## 设置合理的超时参数
+  - 优化代码执行效率
+  - 考虑异步处理非关键步骤
+### 用户体验优化
+## 错误提示：
+  - 提供明确的错误提示，帮助用户理解问题
+  - 对常见错误提供自助解决方案
+## 跳转体验：
+  - 减少跳转次数，提供流畅的登录体验
+  - 添加加载提示，避免用户困惑
+## 兼容性考虑：
+  - 适配不同的终端设备（PC、移动端）
+  - 考虑不同网络环境下的用户体验

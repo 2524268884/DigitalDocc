@@ -1,0 +1,11291 @@
+---
+title: "集成平台API开放文档"
+source_portal: "https://alidocs.dingtalk.com/i/p/ZRPG27Zjye9NOzBp"
+source_preview: "https://alidocs.dingtalk.com/preview/content/word?timestamp=1772677287422&docKey=Q35O85XNX2Nwgl9V&scene=publish"
+docKey: "Q35O85XNX2Nwgl9V"
+exported_at: "2026-03-05T02:21:31Z"
+path:
+  - 开发指引
+  - 集成平台API开放文档
+content_hash: "0203a619872e5fb469e58b14d767690019a22444"
+---
+
+# 集成平台API开放文档
+
+可直接访问以下文档进行API调试
+
+集成平台简介 - 集成平台
+
+https://uj0cyahyvs.apifox.cn/
+1.
+API规范
+1.1
+ 响应格式
+我们的API采用RESTful风格，并以JSON格式返回响应。除非另有说明，所有响应将遵循以下通用结构：
+```json
+{
+    "result": true,          // 请求处理结果，成功为true，失败为false
+    "error": "0",            // 错误码，成功为0，失败则为具体错误码
+    "error_description": "SUCCESS",  // 详细的错误描述
+    "data": {                // 具体的响应数据，详见各API文档
+        // 数据内容
+    }
+}
+```
+1.2
+ 安全认证
+在调用任何业务API之前，必须先通过“获取access_token”接口获取访问令牌（access_token）。后续请求中，需在Request Header中包含以下字段：
+```xml
+Authorization: Bearer <access_token>
+```
+其中<access_token>是您从“获取access_token”接口获得的令牌。
+请确保在每次请求时都携带有效的access_token，以保证请求的安全性和有效性。
+2. 安全认证
+2.1
+获取 access_token
+该接口用于获取访问令牌（access_token），应用在访问集成平台开放平台的其他接口时需使用该 access_token。
+2.1.1
+权限说明
+●
+该接口需要有效的 client_id 和 client_secret 进行认证。
+2.1.2
+接口基本信息
+●
+请求方式: POST
+●
+请求地址: /iam/token
+2.1.3
+请求参数
+●
+形式1：Basic认证
+位置
+
+参数名
+
+参数值
+
+备注
+
+
+Header
+
+Content-Type
+
+application/x-www-form-urlencoded
+
+必填
+
+
+Header
+
+Authorization
+
+Basic base64({client_id}:{client_secret})
+
+必填
+
+
+Body
+
+grant_type
+
+client_credentials
+
+认证方式，取值为 client_credentials
+●
+形式2：请求体认证
+位置
+
+参数名
+
+参数值
+
+备注
+
+
+Header
+
+Content-Type
+
+application/x-www-form-urlencoded
+
+必填
+
+
+Body
+
+grant_type
+
+client_credentials
+
+认证方式，取值为 client_credentials
+
+
+Body
+
+client_id
+
+{client_id}
+
+应用ID
+
+
+Body
+
+client_secret
+
+{client_secret}
+
+应用凭证
+2.1.4
+请求示例
+●
+形式1：Basic认证
+Request Header:
+```http
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic base64({client_id}:{client_secret})
+```
+Request Payload:
+```
+grant_type=client_credentials
+●
+形式2：请求体认证
+```
+Request Header:
+```http
+Content-Type: application/x-www-form-urlencoded
+```
+Request Payload:
+```
+grant_type=client_credentials&client_id={client_id}&client_secret={client_secret}
+```
+2.1.5
+返回参数
+参数名
+
+类型
+
+描述
+
+
+access_token
+
+string
+
+访问令牌
+
+
+token_type
+
+string
+
+令牌类型，固定为 bearer
+
+
+expires_in
+
+integer
+
+令牌有效期，单位为秒
+
+
+scope
+
+string
+
+令牌权限范围
+2.1.6
+返回示例
+```json
+{
+    "access_token": "48709172-514c-40df-9f40-2ee97245b642",
+    "token_type": "bearer",
+    "expires_in": 599,
+    "scope": "address phone openid profile offline_access email"
+}
+```
+2.1.7
+注意事项
+●
+确保 client_id 和 client_secret 的正确性和安全性。
+●
+令牌的有效期较短，请在每次请求前检查令牌是否过期，并及时刷新。
+●
+请根据实际需求选择合适的认证方式。
+2.2
+M2M 应用数据访问权限
+除了上述 API 调用权限（如 scope 限定的操作类型）外，V5.6.2版本后M2M 应用对平台数据的访问和操作还受到严格的组织架构数据范围限制。
+2.2.1
+M2M 组织架构数据范围设置
+在配置 M2M 应用时，您需要在管理控制台中明确选择 M2M 应用可访问的组织架构数据范围。此设置将直接限定 M2M 应用通过 API 可操作的用户、部门和角色所属的组织结构范围。
+2.2.2
+组织架构数据范围的含义
+●
+限定原则: M2M 应用的接口调用权限将严格受限于所配置的组织架构数据范围。它定义了 M2M 应用能够“看到”和“管理”的数据边界。
+●
+授权机制:
+○
+包含式允许: 如果 M2M 应用被授权访问某个父级部门（例如 "部门A"），则该应用将自动拥有操作 "部门A" 及其所有子部门下的用户、部门和角色的权限。这意味着数据范围是向下层级自动扩展的。
+○
+拒绝优先规则: 为了实现更精细的控制，您可以为特定子部门配置明确的“拒绝”规则。例如，即使 "部门A" 整体被授权，但如果您将 "部门A/子部门B" 列入拒绝范围，该 M2M 应用将无法操作 "部门A/子部门B" 及其所有子部门下的任何数据。任何冲突的“允许”规则都将被“拒绝”规则覆盖。
+●
+影响范围: 所有涉及用户管理、部门管理、角色管理等对组织架构有强依赖的 API 接口，都将受到此数据范围的限制。在调用这些 API 时，请确保请求中涉及的任何目标实体（例如：用户所属部门、目标部门、待操作的角色所属部门等）均在 M2M 应用的授权组织架构数据范围内且不被明确拒绝。
+●
+示例:
+○
+即使 M2M 应用拥有 user:create 的 API 操作权限，但如果尝试创建的用户其所属部门不在 M2M 应用被授权的组织架构数据范围内，该 user:create 操作仍将被系统拒绝。
+○
+类似地，若尝试查询或修改某个部门信息，但该部门不在 M2M 应用的授权范围内或被明确拒绝，相关 API 调用也将失败。
+
+●
+
+2.2.3
+字段级访问控制
+V5.8.1版本后增加了字段级配置，未配置的字段不允许访问，资源分为用户和部门。
+2.2.3.1
+资源类型
+●
+用户资源：涉及用户信息的字段访问控制
+●
+部门资源：涉及部门信息的字段访问控制
+2.2.3.2
+控制机制
+●
+只有明确配置的字段才允许访问
+●
+未配置的字段将被系统拒绝访问
+●
+提供更细粒度的数据安全控制
+2.2.4
+如何配置 M2M 组织架构数据范围和字段级访问控制
+●
+请登录您的集成平台管理控制台
+●
+导航至，应用中心 -> 应用管理 -> [选择您的应用] -> [授权范围] -> [M2M授权]
+●
+在该界面，您可以选择或勾选 M2M 应用可以访问的组织部门范围，并根据需要配置具体的允许或拒绝规则
+●
+根据需要配置具体的允许或拒绝规则
+●
+设置字段级访问权限配置。
+3. 组织部门API
+3.1
+获取组/部门的列表
+更新日期: 2025-3-11
+3.1.1
+接口描述
+该接口用于检索组织架构中的所有组/部门列表。根组/部门以“_root”标识，用户不能直接隶属于根组，根组下只能包含其他子组或部门。
+3.1.2
+权限说明
+●
+访问此接口需提供有效的 access_token 进行身份验证。
+●
+用户必须具备查看组/部门的权限。
+3.1.3
+接口基本信息
+●
+请求方式: GET
+●
+请求地址: /iam/api/orgs
+3.1.4
+请求参数
+Header 参数
+参数名
+
+示例值
+
+必填
+
+备注
+
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的访问令牌
+Query 参数
+参数名
+
+示例值
+
+必填
+
+备注
+
+
+attrs
+
+id,name,org_path
+
+否
+
+组/部门属性，多个属性间以逗号分隔
+
+
+pageNumber
+
+1
+
+否
+
+页码:默认为 1
+
+
+pageSize
+
+50
+
+否
+
+每页条数:默认为 50
+最大支持100
+3.1.5
+请求示例
+```http
+GET /iam/api/orgs?attrs=id,name&pageNumber=1&pageSize=10
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+3.1.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+boolean
+
+请求处理结果，成功时为 true，失败时为 false
+
+
+error
+
+string
+
+错误代码，成功时为 0，失败时为具体的错误代码
+
+
+error_description
+
+string
+
+详细的错误描述信息
+
+
+data
+
+object
+
+具体响应数据
+
+
+data.items
+
+array
+
+组/部门列表
+
+
+data.totalItems
+
+number
+
+总项数
+
+
+data.totalPages
+
+number
+
+总页数
+
+
+data.currentPage
+
+number
+
+当前页码
+
+
+data.pageSize
+
+number
+
+每页大小
+data.items 中的字段
+参数名
+
+类型
+
+描述
+
+
+data.items[].name
+
+string
+
+组/部门名称
+
+
+data.items[].id | string
+
+string
+
+组/部门唯一标识符
+
+
+data.items[].org_path
+
+string
+
+组/部门路径
+
+
+data.items[].tenant_id
+
+string
+
+租户ID
+
+
+data.items[].parentRefId
+
+string
+
+父级组/部门ID，根组为 -1
+
+
+data.items[].connector_batch_no
+
+string
+
+连接器批次编号
+
+
+data.items[ ].manager
+
+string
+
+部门主管
+
+
+data.items[ ].org_extension
+
+string
+
+组/部门扩展信息
+
+
+data.items[ ].description
+
+string
+
+组/部门描述
+
+
+data.items[ ].readonly
+
+boolean
+
+是否只读
+
+
+data.items[ ].connector_type
+
+string
+
+连接器类型
+
+
+data.items[ ].checksum
+
+string
+
+用于判断组/部门信息是否发生变化的校验值（内部参数）
+
+
+data.items[ ].connector_id
+
+string
+
+连接器ID
+
+
+data.items[].connector_parent_org_id
+
+string
+
+连接器父级组/部门ID
+
+
+data.items[ ].connector_org_id
+
+string
+
+连接器组/部门ID
+
+
+data.items[ ].seq
+
+string
+
+同级别内排序序号
+
+
+data.items[ ].status
+
+string
+
+组/部门状态
+3.1.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "items": [
+            {
+                "name": "原组织",
+                "id": "1465961724262895617",
+                "org_path": "-1,1465961652670320642,1465961724262895617",
+                "tenant_id": "bit",
+                "parentRefId": "-1",
+                "connector_batch_no": null,
+                "manager": null,
+                "org_extension": null,
+                "description": null,
+                "readonly": false,
+                "connector_type": null,
+                "checksum": "1",
+                "connector_id": "0",
+                "connector_parent_org_id": null,
+                "connector_org_id": null,
+                "seq": "0",
+                "status": "active"
+            },
+            {
+                "name": "研发部",
+                "id": "1465961724262895618",
+                "org_path": "-1,1465961652670320642,1465961724262895617,1465961724262895618",
+                "tenant_id": "bit",
+                "parentRefId": "1465961724262895617",
+                "connector_batch_no": null,
+                "manager": "张三",
+                "org_extension": null,
+                "description": "负责软件开发和维护",
+                "readonly": false,
+```
+3.1.8
+注意事项
+1. 分页处理：通过 pageNumber 和 pageSize 参数进行分页处理。默认情况下，每页显示 10 条记录，从第 1 页开始。
+2. 属性筛选：通过 attrs 参数可以指定返回的组/部门属性，多个属性间用逗号分隔。如果未指定，则返回所有属性。
+3. 根组标识：根组的 parentRefId 值为 -1表示该组没有父级组。
+4. 扩展信息：拓展字段用于存储额外的组/部门扩展信息，层级与基础字段一致，字段名为「属性管理」中已定义的属性名称，具体格式由业务需求决定。
+5. 状态字段：status 字段表示组/部门的状态，常见的状态值包括 active（激活）、inactive（未激活）等。
+
+3.2
+根据组/部门ID获取下级组/部门信息
+更新日期： 2025-3-11
+3.2.1
+接口描述
+根据指定的组/部门ID获取其下级组/部门的信息。
+3.2.2
+权限说明
+●
+应用类型： 内部应用
+●
+权限要求： 需要org:read权限
+3.2.3
+基本信息
+●
+请求方式： GET
+●
+请求URI： /iam/api/orgs/{org_id}
+3.2.4
+请求参数
+类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path参数
+
+org_id
+
+121
+
+是
+
+组/部门的ID，长度限制1~19个字符
+
+
+Query参数
+
+attrs
+
+attrs=id,name,description,org_path
+
+否
+
+组/部门属性
+
+
+Query参数
+
+depth
+
+0
+
+否
+
+根据深度参数返回下级组织：0返回所有的下级树，1返回第一级的下级节点/下级组
+3.2.5
+请求示例
+```http
+GET /iam/api/orgs/1824296962489360386/subs?attrs=id,name&depth=0
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+3.2.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+boolean
+
+请求处理结果，成功时为 true，失败时为 false
+
+
+error
+
+string
+
+错误代码，成功时为 0，失败时为具体的错误代码
+
+
+error_description
+
+string
+
+详细的错误描述信息
+
+
+data
+
+array
+
+具体响应数据，包含下级组/部门列表
+data 数组中的每个对象的参数
+参数名
+
+类型
+
+描述
+
+
+parentRefId
+
+string
+
+当前组/部门的父级ID
+
+
+children
+
+array
+
+当前组/部门的子级组/部门列表（如果为空则表示没有子级）
+
+
+name
+
+string
+
+组/部门的名称
+
+
+description
+
+string
+
+组/部门的描述信息，如果没有描述则为 null
+
+
+id
+
+string
+
+组/部门的唯一标识ID
+
+
+org_path
+
+string
+
+组/部门的组织路径，表示从根节点到当前节点的完整路径
+
+
+tenant_id
+
+string
+
+租户ID，标识该组/部门所属的租户
+
+
+connector_batch_no
+
+string
+
+连接器批次号，如果没有则为 null
+
+
+manager
+
+string
+
+组/部门的管理者，如果没有指定则为 null
+
+
+org_extension
+
+string
+
+组/部门的扩展信息，如果没有则为 null
+
+
+readonly
+
+boolean
+
+是否只读，true 表示只读，false 表示可编辑
+
+
+connector_type
+
+string
+
+连接器类型，如果没有则为 null
+
+
+checksum
+
+string
+
+校验和，用于数据一致性校验（内部参数）
+
+
+connector_id
+
+string
+
+连接器ID，如果没有则为 0
+
+
+connector_parent_org_id
+
+string
+
+连接器父级组织ID，如果没有则为 null
+
+
+connector_org_id
+
+string
+
+连接器组织ID，如果没有则为 null
+
+
+seq
+
+string
+
+序列号，用于排序
+
+
+status
+
+string
+
+组/部门的状态，1 表示启用，其他值表示不同状态
+3.2.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "parentRefId": "1465961724392919042",
+
+            "children": [ ],
+
+            "name": "安全组",
+            "description": "null",
+            "id": "1465961724397113346",
+            "org_path": "-1,1465961652670320642,1465961724262895617,1465961724392919042,1465961724397113346",
+            "tenant_id": "bit",
+            "connector_batch_no": "null",
+            "manager": "null",
+            "org_extension": "null",
+            "readonly": false,
+            "connector_type": "null",
+            "checksum": "1",
+            "connector_id": "0",
+            "connector_parent_org_id": "null",
+            "connector_org_id": "null",
+            "seq": "0",
+            "status": "1"
+        },
+        {
+            "parentRefId": "1465961724392919042",
+
+            "children": [ ],
+
+            "name": "安保组",
+            "description": "null",
+            "id": "1465961724401307650",
+            "org_path": "-1,1465961652670320642,1465961724262895617,1465961724392919042,1465961724401307650",
+```
+3.2.8
+注意事项
+●
+确保请求头中的 Authorization 字段包含有效的访问令牌。
+●
+org_id 必须是一个存在的组/部门ID，否则将返回404错误。
+●
+attrs 参数用于指定需要返回的组/部门属性。如果不提供此参数，默认返回所有属性。
+●
+depth 参数控制返回的下级组织的层级深度。设置为0时，返回所有下级树；设置为1时，仅返回第一级的下级节点。
+3.2.9
+示例场景
+假设您需要获取某个特定部门的所有下级部门信息，并且只关心这些部门的ID和名称。您可以使用以下请求：
+```http
+GET /iam/api/orgs/1824296962489360386/subs?attrs=id,name&depth=0
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+响应将包含该部门的所有下级部门的ID和名称，例如：
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "id": "1465961724397113346",
+            "name": "安全组"
+        },
+        {
+            "id": "1465961724401307650",
+            "name": "安保组"
+        }
+    ]
+}
+```
+3.3
+根据组/部门ID获取组/部门的信息
+更新日期： 2025-03-11
+3.3.1
+接口描述
+根据指定的组/部门ID获取该组/部门的相关信息。
+3.3.2
+权限说明
+●
+应用类型： 内部应用
+●
+权限要求： 需要org:read权限
+3.3.3
+基本信息
+●
+请求方式： GET
+●
+请求URI： /iam/api/orgs/{org_id}
+3.3.4
+请求参数
+类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path参数
+
+org_id
+
+121
+
+是
+
+组/部门的ID，长度限制1~19个字符
+
+
+Query参数
+
+attrs
+
+attrs=id,name,description,org_path
+
+是
+
+组/部门属性
+3.3.5
+请求示例
+```http
+GET /iam/api/orgs/1824296962489360386?attrs=id,name
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+3.3.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+boolean
+
+请求处理结果，成功时为 true，失败时为 false
+
+
+error
+
+string
+
+错误代码，成功时为 0，失败时为具体的错误代码
+
+
+error_description
+
+string
+
+详细的错误描述信息
+
+
+data
+
+object
+
+具体响应数据，包含组/部门的信息
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+name
+
+string
+
+组/部门的名称
+
+
+description
+
+string
+
+组/部门的描述信息，如果没有描述则为 null
+
+
+num_of_children
+
+integer
+
+子级组/部门的数量
+
+
+id
+
+string
+
+组/部门的唯一标识ID
+
+
+org_path
+
+string
+
+组/部门的组织路径，表示从根节点到当前节点的完整路径
+
+
+num_of_users
+
+integer
+
+组/部门中用户的数量
+
+
+tenant_id
+
+string
+
+租户ID，标识该组/部门所属的租户
+
+
+parentRefId
+
+string
+
+当前组/部门的父级ID，如果没有父级则为 null
+
+
+connector_batch_no
+
+string
+
+连接器批次号，如果没有则为 null
+
+
+manager
+
+string
+
+组/部门的管理者，如果没有指定则为 null
+
+
+org_extension
+
+string
+
+组/部门的扩展信息，如果没有则为 null
+
+
+readonly
+
+boolean
+
+是否只读，true 表示只读，false 表示可编辑
+
+
+connector_type
+
+string
+
+连接器类型，如果没有则为 null
+
+
+checksum
+
+string
+
+校验和，用于数据一致性校验（内部参数）
+
+
+connector_id
+
+string
+
+连接器ID，如果没有则为 0
+
+
+connector_parent_org_id
+
+string
+
+连接器父级组织ID，如果没有则为 null
+
+
+connector_org_id
+
+string
+
+连接器组织ID，如果没有则为 null
+
+
+seq
+
+string
+
+序列号，用于排序
+
+
+status
+
+string
+
+组/部门的状态，1 表示启用，其他值表示不同状态
+3.3.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "name": "组织机构",
+        "description": "root_org",
+        "num_of_children": 3,
+        "id": "-1",
+        "org_path": "-1",
+        "num_of_users": 0,
+        "tenant_id": "bit",
+        "parentRefId": "null",
+        "connector_batch_no": "null",
+        "manager": "null",
+        "org_extension": "null",
+        "readonly": true,
+        "connector_type": "null",
+        "checksum": "1",
+        "connector_id": "0",
+        "connector_parent_org_id": "null",
+        "connector_org_id": "null",
+        "seq": "1",
+        "status": "1"
+    }
+}
+```
+3.3.8
+注意事项
+●
+组织路径 (org_path)：表示从根节点到当前节点的完整路径。例如，如果一个部门的路径是 -1/121/182，则表示该部门在组织结构中的位置是从根节点开始，经过ID为121的父级节点，最终到达ID为182的当前节点。
+●
+只读属性 (readonly)：当 readonly 为 true 时，表示该组/部门信息不可修改。只有具有特定权限的管理员才能更改其状态。
+●
+连接器相关字段：如 connector_type, connector_id, connector_batch_no 等字段，主要用于与外部系统集成。如果这些字段为空或为 null，则表示该组/部门没有与任何外部系统关联。
+3.4
+创建组/部门
+更新日期： 2025-03-11
+3.4.1
+接口描述
+创建一个新的组/部门。
+3.4.2
+权限说明
+●
+应用类型： 内部应用
+●
+权限要求： 需要org:create权限
+3.4.3
+基本信息
+●
+请求方式： POST
+●
+请求URI： /iam/api/orgs
+3.4.4
+请求参数
+类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Content-Type
+
+application/json
+
+是
+
+请求内容类型
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Request Body
+
+parent_id
+
+-1
+
+是
+
+直接上级组/部门的ID，根组ID为-1或_root，长度限制1~19个字符
+
+
+Request Body
+
+name
+
+研发部
+
+是
+
+新组/部门的名称，长度限制1~64个字符
+
+
+Request Body
+
+description
+
+test
+
+否
+
+组/部门的描述信息，长度限制1~128个字符
+
+
+Request Body
+
+seq
+
+100
+
+否
+
+同一层级的部门排序值，长度限制1~19个字符
+
+
+Request Body
+
+manager
+
+['1465961728729829377', '1465961728729829376']
+
+否
+
+部门主管对应的用户ID，多个用逗号分隔
+拓展属性说明（非必填）
+拓展属性需满足以下规则：
+1. 字段位置：与基础属性同级，作为 Request Body 的顶级字段。
+2. 字段名（key）：必须是 「属性管理」中已定义的属性名称（例如：address、dept_type 等，具体名称以系统配置为准）。
+3. 字段值（value）：需符合「属性管理」中定义的 数据类型 。
+3.4.5
+请求示例
+```json
+POST /iam/api/orgs
+Content-Type: application/json
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+{
+    "name": "测试",
+    "description": "test",
+    "parent_id": "_root",
+    "seq": 100,
+    "manager": ["1465961728729829377", "1465961728729829376"],
+    "address": "北京市朝阳区",  // 拓展属性：key为“属性管理”中定义的“address”
+    "dept_type": "技术类"      // 拓展属性：key为“属性管理”中定义的“dept_type”
+}
+```
+3.4.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+boolean
+
+请求处理结果，成功时为 true，失败时为 false
+
+
+error
+
+string
+
+错误代码，成功时为 0，失败时为具体的错误代码
+
+
+error_description
+
+string
+
+详细的错误描述信息
+
+
+data
+
+object
+
+具体响应数据，包含新创建的组/部门的信息
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+id
+
+string
+
+新创建的组/部门的唯一标识ID
+3.4.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "id": "1575020876762132481"
+    }
+}
+```
+3.4.8
+注意事项
+●
+根组织表示方式：直接上级组/部门的ID为-1或_root，表示该组/部门是根组织。
+●
+调用频率限制：请参考相关文档中的调用频率限制，避免因频繁调用导致的限制问题。
+●
+部门主管：manager字段可以指定多个用户ID，这些用户将成为该组/部门的主管。如果未指定，则默认为空。
+●
+排序值 (seq)：用于在同一层级内的部门排序。较大的值表示较高的优先级。
+●
+安全性和权限：确保只有具有相应权限的用户才能调用此接口，并且access_token应妥善保管，防止泄露。
+3.5
+修改组/部门
+更新日期： 2025-03-11
+3.5.1
+接口描述
+修改指定的组/部门信息。
+3.5.2
+权限说明
+●
+应用类型： 内部应用
+●
+权限要求： 需要org:write权限
+3.5.3
+基本信息
+●
+请求方式： PATCH
+●
+请求URI： /iam/api/orgs/{org_id}
+3.5.4
+请求参数
+类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Content-Type
+
+application/json
+
+是
+
+指定请求的内容类型为JSON
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path参数
+
+org_id
+
+121
+
+是
+
+组/部门的ID，长度限制1~19个字符
+
+
+Request Body
+
+parent_id
+
+-1 或 _root
+
+是
+
+直接上级组/部门的ID，根组ID为-1或_root，长度限制1~19个字符
+
+
+Request Body
+
+name
+
+研发部
+
+是
+
+组/部门的名称，长度限制1~64个字符
+
+
+Request Body
+
+description
+
+测试描述
+
+否
+
+组/部门的描述信息，长度限制1~128个字符
+
+
+Request Body
+
+seq
+
+100
+
+否
+
+同一层级的部门排序值，长度限制1~19个字符
+
+
+Request Body
+
+manager
+
+[1465961728729829377, 1465961728729829376]
+
+否
+
+部门主管对应的用户ID，多个用逗号分隔
+拓展属性说明（非必填）
+拓展属性需满足以下规则：
+1. 字段位置：与基础属性同级，作为 Request Body 的顶级字段。
+2. 字段名（key）：必须是 「属性管理」中已定义的属性名称（例如：address、dept_type 等，具体名称以系统配置为准）。
+3. 字段值（value）：需符合「属性管理」中定义的 数据类型 。
+3.5.5
+请求示例
+```json
+PATCH /iam/api/orgs/121
+Content-Type: application/json
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+{
+    "name": "测试",
+    "description": "test",
+    "parent_id": "_root",
+    "seq": 100,
+    "manager": [1465961728729829377, 1465961728729829376],
+    "address": "北京市朝阳区",  // 拓展属性：key为“属性管理”中定义的“address”
+    "dept_type": "技术类"      // 拓展属性：key为“属性管理”中定义的“dept_type”
+}
+```
+3.5.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+boolean
+
+请求处理结果，成功时为 true，失败时为 false
+
+
+error
+
+string
+
+错误代码，成功时为 0，失败时为具体的错误代码
+
+
+error_description
+
+string
+
+详细的错误描述信息
+3.5.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+3.5.8
+注意事项
+1. 根组织的表示方式： 根组的ID可以使用-1或_root。
+2. 调用频率限制： 请参考应用的具体调用频率限制，避免超过限制导致请求被拒绝。
+3. 参数格式： manager字段应为一个包含用户ID的数组，如果只有一个用户ID，请确保其格式为单元素数组（例如[1465961728729829377]）。
+4. 必填字段： parent_id、name和org_id是必填字段，其他字段为可选。
+请检查以上内容是否符合您的要求，并确保没有遗漏任何重要信息。如果有不确定的地方或需要进一步调整，请告知我。
+
+3.6
+删除组/部门
+更新日期：2025-03-11
+3.6.1
+接口描述
+本接口用于删除指定的组或部门。通过此接口，管理员可以移除不再需要的组织单元，以保持组织结构的整洁和高效。
+3.6.2
+权限说明
+●
+用户权限：调用者必须具备管理员权限。
+●
+应用权限：调用应用需拥有组织管理权限。
+3.6.3
+接口基本信息
+●
+请求方法：DELETE
+●
+请求URL：/iam/api/orgs/{org_id}
+3.6.4
+请求参数
+参数类型
+
+参数名
+
+是否必填
+
+示例值
+
+描述
+
+
+Header
+
+Content-Type
+
+是
+
+application/json
+
+指定请求体的内容类型
+
+
+Header
+
+Authorization
+
+是
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+通过“获取access_token”接口获取的访问令牌
+
+
+Path
+
+org_id
+
+是
+
+121
+
+组/部门的唯一标识符，长度为1至19个字符
+3.6.5
+请求示例
+```http
+DELETE /iam/api/orgs/121 HTTP/1.1
+Host: your-api-host
+Content-Type: application/json
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+3.6.6
+响应参数
+参数名
+
+数据类型
+
+描述
+
+
+result
+
+boolean
+
+操作是否成功
+
+
+error
+
+string
+
+错误代码（若操作失败）
+
+
+error_description
+
+string
+
+错误描述（若操作失败）
+3.6.7
+响应示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+3.6.8
+注意事项
+1. 权限要求：确保调用者具有管理员权限，并且调用的应用已授予组织管理权限。
+2. 路径参数验证：org_id 必须是有效的组/部门ID，且长度应在1到19个字符之间。
+3. 根组织保护：根组织不可被删除。如尝试删除根组织，系统将返回相应的错误信息。
+4.
+API使用频率：请遵守平台规定的API调用频率限制，以避免因频繁请求导致的限流措施。
+
+3.7
+过滤部门信息
+更新日期：2025-03-11
+3.7.1
+接口描述
+本接口用于根据指定的过滤条件查询部门信息。通过此接口，用户可以获取符合特定条件的部门列表，并支持分页和属性筛选。
+3.7.2
+权限说明
+●
+用户权限：调用者必须具备管理员权限。
+●
+应用权限：调用应用需拥有组织管理权限。
+3.7.3
+接口基本信息
+●
+请求方法：POST
+●
+请求URL：/iam/api/orgs/search
+3.7.4
+请求参数
+参数类型
+
+参数名
+
+是否必填
+
+示例值
+
+描述
+
+
+Request Header
+
+Content-Type
+
+是
+
+application/json
+
+指定请求体的内容类型
+
+
+Authorization
+
+是
+
+Bearer  ec2f0ada-6181-4105-82a1-dd87eb785542
+
+通过“获取access_token”接口获取的访问令牌
+
+
+Body参数
+
+attrs
+
+否
+
+["id","name"]
+
+属性名，取值不能为空数组：[]
+
+
+page
+
+是
+
+1
+
+第几页
+
+
+size
+
+是
+
+10
+
+每页条数
+
+
+fields
+
+
+
+否
+
+
+
+过滤条件
+
+
+attr
+
+
+
+id
+
+过滤属性值
+
+
+op
+
+
+
+gt
+
+比较符号: gt(大于)、lt(小于)、eq(等于)
+
+
+value
+
+
+
+123
+
+值
+3.7.5
+请求示例
+```json
+{
+    "attrs": [
+        "id",
+        "name"
+    ],
+    "fields": [
+        {
+            "attr": "id",
+            "op": "gt",
+            "value": "123"
+        }
+    ],
+    "page": 1,
+    "size": 10
+}
+```
+3.7.6
+响应参数
+参数名
+
+数据类型
+
+描述
+
+
+result
+
+boolean
+
+操作是否成功
+
+
+error
+
+string
+
+错误代码（若操作失败）
+
+
+error_description
+
+string
+
+错误描述（若操作失败）
+
+
+data
+
+object
+
+查询结果数据
+
+
+-
+
+items
+
+array
+
+
+-
+
+total
+
+integer
+
+
+-
+
+size
+
+integer
+
+
+-
+
+page
+
+integer
+
+
+-
+
+orders
+
+array
+
+
+-
+
+search_count
+
+boolean
+
+
+-
+
+pages
+
+integer
+3.7.7
+响应示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "items": [
+            {
+                "name": "大数据学院1班",
+                "id": "1778717347394609153"
+            },
+            {
+                "name": "计算机科学与技术1班",
+                "id": "1778717347109396481"
+            },
+            {
+                "name": "测试技术3层",
+                "id": "1778717346803212290"
+            },
+            {
+                "name": "大数据学院2班",
+                "id": "1778717346505416706"
+            },
+            {
+                "name": "部门10",
+                "id": "1778717346253758465"
+            },
+            {
+                "name": "测试部门",
+                "id": "1778717345947574273"
+            },
+            {
+                "name": "部门1",
+                "id": "1778717345695916033"
+            },
+            {
+                "name": "部门3",
+```
+3.7.8
+注意事项
+1. 分页参数：page 和 size 参数必须为正整数。如果传入的值不合法，系统将返回 400 错误。
+2. 属性筛选：attrs 参数用于指定返回的部门信息中包含的字段。如果 attrs 为空数组 [ ]，系统将返回所有可用字段。
+3. 过滤条件：fields 参数是一个数组，每个元素代表一个过滤条件。过滤条件支持的比较操作符包括 gt（大于）、lt（小于）和 eq（等于）。如果 fields 数组为空，则表示没有过滤条件，查询结果将返回所有符合条件的部门信息。
+4. 排序规则：orders 参数可以用来指定返回结果的排序规则。例如，`{"attr": "name", "order": "asc"}` 表示按名称升序排序。默认情况下，结果将按部门ID升序排列。
+
+4. 用户API
+4.1
+查询用户
+更新日期：2025-03-11
+4.1.1
+接口描述
+查询用户信息（支持分页）。
+4.1.2
+权限说明
+需要通过“获取access_token”接口获取的access_token进行身份验证。该接口适用于所有具有相应权限的应用类型。
+4.1.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/users
+4.1.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Query参数
+
+attrs
+
+sub,name,org_ids,email,username,status,phone_number,readonly,come_from,picture,created_mode,telephone_number,group_positions
+
+否
+
+用户属性，多个属性用逗号分隔
+
+
+Query参数
+
+q
+
+13800138000
+
+否
+
+姓名/用户名/手机/邮箱/工号（模糊查询）
+
+
+Query参数
+
+org_id
+
+1465961724262895617
+
+否
+
+组/部门id，组/部门的id，查询的所有用户都必须（直接或间接地）属于该组/部门，为了查询整个根组下的所有用户，可以忽略该参数，长度限制1~19个字符
+
+
+Query参数
+
+page
+
+1
+
+否
+
+页码
+
+
+Query参数
+
+size
+
+10
+
+否
+
+每页条数
+
+
+Query参数
+
+return_users_in_sub_org
+
+true
+
+否
+
+是否查询子组/子部门下的用户：如果为true，则查询子组/子部门下的用户；如果为false，则不查询子组/子部门下的用户。默认值为true
+4.1.5
+请求示例
+```http
+GET /iam/api/users?attrs=sub,name,org_ids,email,username,status,phone_number,readonly,come_from,picture,created_mode&q=13800138000&org_id=1465961724262895617&page=1&size=10&return_users_in_sub_org=true
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+4.1.6
+返回参数
+参数名
+
+数据类型
+
+描述
+
+
+result
+
+boolean
+
+操作是否成功
+
+
+error
+
+string
+
+错误代码（若操作失败）
+
+
+error_description
+
+string
+
+错误描述（若操作失败）
+
+
+data
+
+object
+
+查询结果数据
+
+
+-
+
+items
+
+array
+
+
+-
+
+total
+
+integer
+
+
+-
+
+size
+
+integer
+
+
+-
+
+page
+
+integer
+
+
+-
+
+pages
+
+integer
+items 详细字段
+字段名
+
+数据类型
+
+描述
+
+
+sub
+
+string
+
+用户的唯一标识符
+
+
+name
+
+string
+
+用户姓名
+
+
+gender
+
+string
+
+MALE：男
+FEMALE：女
+SECRET：保密
+
+
+user_extension
+
+string
+
+多个扩展字段
+
+
+org_ids
+
+array of integers
+
+用户所属组织ID列表
+
+
+phone_number
+
+string
+
+用户手机号码
+
+
+group_positions
+
+Array
+
+用户对应的部门属性
+is_main（是否主部门）1是/0否
+is_manager（是否部门主管 1是/0否）
+position（部门职位）
+user_code（部门工号）
+org_id（部门id）
+org_name（部门名称）
+user_order（人员排序）
+
+
+orgs
+
+array of strings
+
+用户所属组织名称列表
+
+
+email
+
+string
+
+用户电子邮件地址（可为空）
+
+
+telephone_number
+
+string
+
+分机号
+
+
+username
+
+string
+
+用户名
+
+
+status
+
+string
+
+ACTIVE：正常
+SUSPENDED：禁用
+INACTIVE：未生效
+OVERDUE：过期
+NOACTIVE：未激活
+TMPSUSPENDED：临时禁用
+DEACTIVATE：停用
+4.1.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "items": [
+            {
+                "sub": "1465961728729829377",
+                "name": "杨某",
+                "user_extension"： "｛\'"ex_filter_status\"：\"1234567890\"
+\"ex_text_test\"： \"40551206609329400\"｝",
+                "org_ids": [
+                    1465961724418084865,
+                    1465961724262895617,
+                    1465961724292255746,
+                    1465961724594245634
+                ],
+                "phone_number": "18616510000",
+                "telephone_number":021-801281212
+                "orgs": [
+                    "信息部",
+                    "公辅工段",
+                    "维修工段",
+                    "原组织"
+                ],
+                "email": null,
+                "username": "2655691326271994",
+                "status": "ACTIVE",
+                "group_positions": [
+                    {
+                        "position": "222",
+                        "user_code": "111",
+                        "org_id": "1465961724418084865",
+                        "org_name": "信息部",
+                        "dept_path": "-1,-2",
+                        "user_order": null,
+```
+4.1.8
+注意事项
+●
+org_id参数
+●
+org_id参数：如果提供该参数，系统将仅返回直接或间接隶属于指定组/部门的用户。若要查询整个根组下的所有用户，则可以省略此参数。需要注意的是，当使用return_users_in_sub_org为true时，即使指定了org_id，查询结果也会包含子组/子部门中的用户。
+●
+attrs参数：允许客户端自定义需要返回的用户属性字段，这有助于减少不必要的数据传输，提高接口响应速度。支持的属性包括但不限于用户的唯一标识符（sub）、姓名、组织ID列表、电子邮件地址等。请注意，尽管可以请求多个属性，但并非所有应用都拥有访问某些敏感信息（如手机号码）的权限，因此在实际响应中可能不会包含这些字段。
+●
+分页功能：通过设置page和size参数来控制返回的数据量及当前查看的位置。这对于处理大量用户数据尤为重要，因为它可以帮助前端应用程序更高效地展示信息，并改善用户体验。同时，请确保合理选择每页显示的记录数，以避免一次性加载过多数据导致性能下降。
+●
+模糊搜索：利用q参数可以根据用户名、真实姓名、手机号或邮箱地址进行模糊匹配查询。这项功能对于快速定位特定用户非常有用，尤其是在大型企业环境中。然而，在执行此类搜索时也应注意保护个人隐私，避免未经授权的信息泄露。
+●
+身份验证：每次调用本接口都需要附带有效的access_token作为认证凭据。获取此令牌的过程应遵循OAuth 2.0标准流程，并且建议定期刷新以保证安全性。此外，不同角色的账号可能会有不同的访问级别，因此在设计相关业务逻辑时需考虑这一点。
+●
+错误处理：如果请求过程中出现任何问题，服务器将以JSON格式返回详细的错误信息，包括错误代码(error)和描述(error_description)。开发者应当根据这些反馈采取适当措施，比如重新尝试请求、提示用户检查输入等，从而提升系统的健壮性和容错能力。
+●
+性能考量：虽然此API提供了强大的查询功能，但在实际部署时仍需关注其对后端数据库的压力。特别是在高并发场景下，频繁的大范围查询可能导致服务响应变慢甚至超时。为此，建议实施缓存策略、优化索引结构以及限制单次请求的最大返回条目数量等方式来缓解潜在性能瓶颈。
+
+
+4.1.9
+根据多个条件过滤并查询用户信息
+更新日期：2025-3-11
+4.1.9.1
+接口描述
+该接口用于根据多个条件过滤并查询用户信息。支持通过姓名、用户名、手机、邮箱、工号等进行模糊查询，并可以结合其他属性条件进行精确匹配。
+4.1.9.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有访问用户信息的权限，具体权限配置请参考系统管理指南。
+4.1.9.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/users/search
+4.1.9.4
+请求参数
+1.1.1.1
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+4.1.9.5
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+search_field
+
+String
+
+否
+
+用于指定具体的搜索属性（如姓名、用户名等），需与 filter 配合使用，明确对哪个字段进行搜索。
+name:姓名, username:用户名, phone_number:手机号, email:邮箱
+
+
+filter
+
+String
+
+否
+
+当不填写search_field时，默认对姓名/用户名/手机/邮箱（模糊查询）；若填写了 search_field，则仅对其指定的字段进行匹配
+
+
+status
+
+String
+
+否
+
+用户状态，例如 ACTIVE
+
+
+org_id
+
+String
+
+否
+
+部门ID，长度限制1~19个字符
+
+
+include_users_in_sub_orgs
+
+Boolean
+
+否
+
+是否包含子组织，默认为 false
+
+
+attrs
+
+Array
+
+否
+
+用户属性，取值不能为空数组，例如 ["username", "name", "sub"]
+
+
+fields
+
+Array
+
+否
+
+属性条件，每个元素为一个对象，包含 op (操作符)、value (值) 和 attr (属性名)，例如 `[{"op": "eq", "value": "345", "attr": "phone_number"}]`
+
+
+userIds
+
+Array
+
+否
+
+用户ID列表，例如 ["147564569", "23765346"]
+
+
+page
+
+Integer
+
+否
+
+页码，默认为 0
+
+
+size
+
+Integer
+
+否
+
+每页条数，默认为 10
+4.1.9.6
+请求示例
+```json
+{
+    "size": 10,
+    "page": 1,
+    "fields": [
+        {
+            "op": "gt",
+            "value": "2024-04-11 00:00:00",
+            "attr": "update_time"
+        }
+    ]
+}
+```
+4.1.9.7
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+数据对象，包含查询结果
+4.1.9.8
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "items": [
+            {
+                "birthdate": null,
+                "telephone_number": "",
+                "cert": null,
+                "preferred_username": null,
+                "hired_date": "1628438400000",
+                "type": "1",
+                "password_status": "NORMAL",
+                "connector_uid": null,
+                "connector_type": null,
+                "connector_sub_id": null,
+                "create_time": "1712564864000",
+                "last_login": null,
+                "profile": null,
+                "user_extension": "{\"ex_stst\":\"ewe\"}",
+                "stst":"ewe",
+                "group_positions": null,
+                "name": "推送33409xx",
+                "phone_number": "+86-18857689879",
+                "orgs": [
+                    "样板间1"
+                ],
+                "status": "OVERDUE",
+                "end_date": "2024-04-08",
+                "tenant_id": "bit",
+                "sub": "1777251969008857089",
+                "zoneinfo": null,
+                "gender": "MALE",
+                "title": "",
+                "locale": null,
+```
+4.1.9.9
+注意事项
+1. 请求频率限制：为防止滥用，请遵循系统规定的请求频率限制。具体的频率限制请参考系统管理指南。
+2. 数据隐私：在使用该接口时，请确保遵守相关法律法规和公司政策，保护用户数据隐私。
+3. 字段过滤：通过 attrs 参数可以指定返回的用户属性，减少不必要的数据传输，提高性能。
+4. 扩展信息：拓展字段用于存储额外的扩展信息，层级与基础字段一致，字段名为「属性管理」中已定义的属性名称，具体格式由业务需求决定。
+5. 分页查询：使用 page 和 size 参数进行分页查询，避免一次性返回大量数据导致性能问题。
+
+4.2
+根据用户帐号获取用户信息
+更新日期：2025-3-11
+4.2.1
+接口描述
+该接口用于根据用户帐号获取用户的详细信息。可以通过指定 attrs 参数来选择返回的用户属性，如果不传该参数，则返回全部属性。
+4.2.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有访问用户信息的权限，具体权限配置请参考系统管理指南。
+4.2.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/user
+4.2.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Query 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+attrs
+
+String
+
+否
+
+用户属性，多个属性用逗号分隔，例如 sub,name,email,username,status,phone_number,user_job_number,telephone_number。不传该参数时，返回全部属性。
+
+
+username
+
+String
+
+是
+
+用户帐号，长度限制1~64个字符
+4.2.5
+请求示例
+```http
+GET /iam/api/user?attrs=sub,name,email,username,status,phone_number,user_job_number&username=2655691326271994
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+4.2.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+数据对象，包含查询结果
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+sub
+
+String
+
+用户的唯一标识符
+
+
+group_positions
+
+Array
+
+用户在不同部门的职位信息
+
+
+name
+
+String
+
+用户姓名
+
+
+org_ids
+
+Array
+
+用户所属部门的ID列表
+
+
+phone_number
+
+String
+
+用户电话号码
+
+
+telephone_number
+
+String
+
+分机号
+
+
+group_positions
+
+Array
+
+用户对应的部门属性
+is_main（是否主部门）1是/0否
+is_manager（是否部门主管 1是/0否）
+position（部门职位）
+user_code（部门工号）
+org_id（部门id）
+org_name（部门名称）
+user_order（人员排序）
+
+
+user_job_number
+
+String
+
+用户工号
+
+
+tag
+
+Array
+
+用户标签信息
+
+
+email
+
+String
+
+用户电子邮件地址
+
+
+username
+
+String
+
+用户帐号
+
+
+status
+
+String
+
+用户状态（例如：ACTIVE）
+group_positions 数组中的参数
+参数名
+
+类型
+
+描述
+
+
+is_main
+
+Integer
+
+是否为主部门：1 表示是，0 表示否
+
+
+is_manager
+
+Integer
+
+是否为部门主管：1 表示是，0 表示否
+
+
+position
+
+String
+
+部门职位名称
+
+
+user_code
+
+String
+
+部门工号
+
+
+org_id
+
+String
+
+部门ID
+
+
+org_name
+
+String
+
+部门名称
+4.2.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "sub": "1465961728729829377",
+        "group_positions": [
+            {
+                "is_main": 1,
+                "is_manager": 1,
+                "position": "",
+                "user_code": null,
+                "org_id": "1465961724418084865",
+                "org_name": "维修工段"
+            },
+            {
+                "is_main": 0,
+                "is_manager": 0,
+                "position": "",
+                "user_code": null,
+                "org_id": "1465961724262895617",
+                "org_name": "原组织"
+            },
+            {
+                "is_main": 0,
+                "is_manager": 0,
+                "position": "",
+                "user_code": null,
+                "org_id": "1465961724292255746",
+                "org_name": "还原工段"
+            },
+            {
+                "is_main": 0,
+                "is_manager": 0,
+                "position": "",
+                "user_code": null,
+```
+4.2.8
+注意事项
+1. 属性选择：通过 attrs 参数可以选择返回的用户属性。如果需要获取特定属性，请确保在请求中明确列出这些属性。如果不传递该参数，则返回所有可用的用户属性。
+2. 权限管理：确保应用具有访问用户信息的权限。权限配置需遵循系统管理指南中的相关规定。
+3. 数据安全：在处理用户敏感信息时，请严格遵守相关法律法规和公司政策，确保数据的安全性和隐私保护。
+
+4.3
+创建用户
+更新日期：2025-3-11
+4.3.1
+接口描述
+该接口用于创建单个用户。用户的组/部门属性可以是默认组/缺省组，但不能是根组。
+4.3.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有创建用户的权限，具体权限配置请参考系统管理指南。
+4.3.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/users
+4.3.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+username
+
+String
+
+是
+
+user1
+
+用户登录名，长度限制1~64个字符
+
+
+password
+
+String
+
+是
+
+123456Ab
+
+用户密码
+
+
+name
+
+String
+
+否
+
+张三
+
+用户姓名，长度限制1~64个字符
+
+
+email
+
+String
+
+否
+
+user1@163.com
+
+电子邮件
+
+
+phone_number
+
+String
+
+否
+
+13800138000
+
+手机号码：不能为NULL
+
+
+telephone_number
+
+String
+
+否
+
+021-81978267
+
+座机号
+
+
+id_card
+
+String
+
+否
+
+141**************
+
+身份证号
+
+
+user_job_number
+
+String
+
+否
+
+G001
+
+人员工号，长度限制1~32个字符
+
+
+nickname
+
+String
+
+否
+
+test
+
+昵称，长度限制1~64个字符
+
+
+picture
+
+String
+
+否
+
+
+
+头像，base64编码
+
+
+org_ids
+
+Array
+
+是
+
+["1", "2"]
+
+用户所属的组织ID列表
+
+
+address
+
+String
+
+否
+
+北京市朝阳区
+
+办公地点
+
+
+title
+
+String
+
+否
+
+研发人员
+
+职位
+
+
+hired_date
+
+String
+
+否
+
+1692519935
+
+入职时间（时间戳）
+
+
+tag
+
+Array
+
+否
+
+`[{"id": "1770375962354085889", "name": "dzbzdf", "code": "gg", "type": 1, "description": "fds", "expression": null, "app_id": "1770359761712279554", "app_name": "test", "app_code": "111", "group_is_default": 1, "group_description": "1111"}]`
+
+标签/角色信息
+
+
+group_positions
+
+Array
+
+否
+
+`[{"is_main": 1, "is_manager": 1, "position": "", "user_code": null, "org_id": "1465961724418084865", "org_name": "维修工段", "user_order": 100}]`
+
+用户对应的部门属性
+is_main（是否主部门）1是/0否
+is_manager（是否部门主管 1是/0否）
+position（部门职位）
+user_code（部门工号）
+org_id（部门id）
+org_name（部门名称）
+user_order（人员排序）
+拓展属性说明（非必填）
+拓展属性需满足以下规则：
+1. 字段位置：与基础属性同级，作为 Request Body 的顶级字段。
+2. 字段名（key）：必须是 「属性管理」中已定义的属性名称（例如：postal_code、country_code 等，具体名称以系统配置为准）。
+3. 字段值（value）：需符合「属性管理」中定义的 数据类型 。
+4.3.5
+请求示例
+```json
+{
+    "username": "test001",
+    "password": "123456Ab",
+    "name": "测试1",
+    "phone_number": "13800138001",
+    "user_job_number": "G001",
+    "telephone_number":"021-829837121"
+    "email": "test001@163.com",
+    "nickname": "test",
+    "org_ids": ["-2"],
+    "address": "北京市",
+    "title": "这是职位",
+    "hired_date": "2023-07-31 12:10:59",
+    "group_positions":"[{"is_main": 1, "izs_manager": 1, "position": "", "user_code": null, "org_id": "1465961724418084865", "org_name": "维修工段", "user_order": 100}]",
+    "postal_code": "528400"       // 邮政编码 拓展属性：key为“属性管理”中定义的“postal_code”
+}
+```
+4.3.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+数据对象，包含查询结果
+data 对象中的字段说明：
+参数名
+
+类型
+
+描述
+
+
+sub
+
+String
+
+用户ID
+
+
+username
+
+String
+
+用户登录名
+
+
+name
+
+String
+
+用户姓名
+
+
+phone_number
+
+String
+
+手机号码
+
+
+user_job_number
+
+String
+
+人员工号
+
+
+telephone_number
+
+String
+
+座机号
+
+
+email
+
+String
+
+电子邮件
+
+
+nickname
+
+String
+
+昵称
+
+
+org_ids
+
+Array
+
+用户所属的组织ID列表
+
+
+address
+
+String
+
+办公地点
+
+
+title
+
+String
+
+职位
+
+
+hired_date
+
+String
+
+入职时间（标准日期时间格式）
+
+
+created_at
+
+String
+
+创建时间（标准日期时间格式）
+4.3.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "sub": "1575
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "sub": "1575894321",
+        "username": "test001",
+        "name": "测试1",
+        "phone_number": "13800138001",
+        "user_job_number": "G001",
+        "telephone_number":"021-871219081"
+        "email": "test001@163.com",
+        "nickname": "test",
+        "org_ids": ["-2"],
+        "address": "北京市",
+        "title": "这是职位",
+        "hired_date": "2023-07-31 12:10:59",
+        "created_at": "2025-03-11 14:30:00"
+    }
+}
+```
+4.3.8
+注意事项
+1. 用户名唯一性：每个用户的username必须是唯一的，系统会自动检查用户名是否已被占用。如果用户名已存在，接口将返回错误码1003。
+2. 密码复杂度：为了确保账户安全，密码应符合一定的复杂度要求，例如包含大小写字母、数字和特殊字符，并且长度不少于8个字符。
+3. 组织ID验证：提供的org_ids中的组织ID必须存在于系统中，否则接口将返回错误码1002。
+4. 时间格式：hired_date字段应为Unix时间戳或标准的日期时间格式（如YYYY-MM-DD HH:MM:SS），否则将导致参数格式错误。
+5. 权限检查：调用该接口的应用必须具有创建用户的权限，否则将返回错误码1004。
+
+4.4
+修改用户
+更新日期：2025-3-11
+4.4.1
+接口描述
+该接口用于修改单个用户的信息。通过指定用户名来定位用户，并更新其相关信息。
+4.4.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有修改用户的权限，具体权限配置请参考系统管理指南。
+4.4.3
+接口基本信息
+●
+请求方式：PATCH
+●
+请求地址：/iam/api/user?username={username}
+4.4.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Query 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+username
+
+String
+
+是
+
+user1
+
+用户登录名，长度限制1~64个字符
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+name
+
+String
+
+否
+
+张三
+
+用户姓名，长度限制1~64个字符
+
+
+email
+
+String
+
+否
+
+user1@163.com
+
+电子邮件
+
+
+phone_number
+
+String
+
+否
+
+13800138000
+
+手机号码：不能为NULL
+
+
+telephone_number
+
+String
+
+否
+
+021-89871261
+
+座机号
+
+
+id_card
+
+String
+
+否
+
+141***************
+
+身份证号
+
+
+user_job_number
+
+String
+
+否
+
+G001
+
+人员工号，长度限制1~32个字符
+
+
+nickname
+
+String
+
+否
+
+test
+
+昵称，长度限制1~64个字符
+
+
+picture
+
+String
+
+否
+
+
+
+头像，base64编码
+
+
+org_ids
+
+Array
+
+否
+
+["1", "2"]
+
+用户所属的组织ID列表
+
+
+address
+
+String
+
+否
+
+北京市朝阳区
+
+办公地点
+
+
+title
+
+String
+
+否
+
+研发人员
+
+职位
+
+
+hired_date
+
+String
+
+否
+
+2023-07-31 12:10:59
+
+入职时间（标准日期时间格式）
+
+
+tag
+
+Array
+
+否
+
+`[{"id": "1770375962354085889", "name": "dzbzdf", "code": "gg", "type": 1, "description": "fds", "expression": null, "app_id": "1770359761712279554", "app_name": "test", "app_code": "111", "group_is_default": 1, "group_description": "1111"}]`
+
+标签/角色信息
+
+
+group_positions
+
+Array
+
+否
+
+`[{"is_main": 1, "is_manager": 1, "position": "", "user_code": null, "org_id": "1465961724418084865", "org_name": "维修工段", "user_order": 100}]`
+
+用户对应的部门属性
+is_main（是否主部门）1是/0否
+is_manager（是否部门主管 1是/0否）
+position（部门职位）
+user_code（部门工号）
+org_id（部门id）
+org_name（部门名称）
+user_order（人员排序）
+拓展属性说明（非必填）
+拓展属性需满足以下规则：
+1. 字段位置：与基础属性同级，作为 Request Body 的顶级字段。
+2. 字段名（key）：必须是 「属性管理」中已定义的属性名称（例如：postal_code、country_code 等，具体名称以系统配置为准）。
+3. 字段值（value）：需符合「属性管理」中定义的 数据类型 。
+4.4.5
+请求示例
+```json
+{
+    "name": "测试1",
+    "phone_number": "13800138001",
+    "telephone_number":"021-861821121"
+    "user_job_number": "G001",
+    "email": "test001@163.com",
+    "nickname": "test",
+    "org_ids": ["-2"],
+    "address": "北京市316",
+    "title": "保存职位326",
+    "hired_date": "2023-07-31 12:10:59",
+    "postal_code": "528400"       // 邮政编码 拓展属性：key为“属性管理”中定义的“postal_code”
+
+}
+```
+4.4.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+4.4.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+4.4.8
+注意事项
+1. 用户名唯一性：username 参数用于定位用户，必须确保其在系统中的唯一性。如果提供的 username 不存在，接口将返回错误信息。
+2. 字段更新规则：请求体中仅需包含需要更新的字段。未提供的字段将保持不变。例如，若只希望更新用户的电话号码，则只需在请求体中提供 phone_number 字段。
+3. 数据校验：所有输入字段均需符合相应的格式要求。例如，email 必须是有效的电子邮件地址，phone_number 应符合手机号码的标准格式。
+4. 权限控制：调用此接口的应用必须具备修改用户信息的权限。权限配置应在系统管理界面中进行设置，并且应用应通过 Authorization 头传递有效的 access_token。
+4.5
+启用/禁用用户
+更新日期：2025-3-11
+4.5.1
+接口描述
+该接口用于启用或禁用一个或多个用户。通过指定用户的登录名和状态来执行操作。
+4.5.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有启用或禁用用户的权限，具体权限配置请参考系统管理指南。
+4.5.3
+接口基本信息
+●
+请求方式：PUT
+●
+请求地址：/iam/api/users/status
+4.5.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+status
+
+String
+
+是
+
+ACTIVE, SUSPENDED
+
+用户状态，ACTIVE 表示启用，SUSPENDED 表示禁用
+
+
+usernames
+
+Array
+
+是
+
+["user1", "user2"]
+
+要启用或禁用用户的登录名列表
+4.5.5
+请求示例
+```json
+{
+    "status": "SUSPENDED",
+    "usernames": ["user1", "user2"]
+}
+```
+4.5.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+4.5.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+4.5.8
+注意事项
+1. 状态值校验：status 参数必须是 ACTIVE 或 SUSPENDED，否则接口将返回错误信息。
+2. 用户名有效性：usernames 列表中的每个用户名都必须在系统中存在。如果提供的用户名不存在，接口将返回错误信息。
+3. 批量操作：此接口支持对多个用户进行批量启用或禁用操作。请确保 usernames 列表中包含所有需要操作的用户登录名。
+4. 权限控制：调用此接口的应用必须具备启用或禁用用户的权限。权限配置应在系统管理界面中进行设置，并且应用应通过 Authorization 头传递有效的 access_token。
+4.6
+删除用户
+更新日期：2025-3-11
+4.6.1
+接口描述
+该接口用于删除一个或多个用户。通过指定用户的登录名来执行删除操作。
+4.6.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有删除用户的权限，具体权限配置请参考系统管理指南。
+4.6.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/users/delete
+4.6.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+usernames
+
+Array
+
+是
+
+["user1", "user2"]
+
+要删除用户的登录名列表
+4.6.5
+请求示例
+```json
+{
+    "usernames": ["user1", "user2"]
+}
+```
+4.6.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+4.6.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+4.6.8
+注意事项
+1. 用户名有效性：usernames 列表中的每个用户名都必须在系统中存在。如果提供的用户名不存在，接口将返回错误信息。
+2. 批量操作：此接口支持对多个用户进行批量删除操作。请确保 usernames 列表中包含所有需要删除的用户登录名。
+3. 权限控制：调用此接口的应用必须具备删除用户的权限。权限配置应在系统管理界面中进行设置，并且应用应通过 Authorization 头传递有效的 access_token。
+4. 响应时间：正常情况下，接口响应时间应小于1秒。如遇超时或异常情况，请检查网络连接及请求参数是否正确。
+5. 数据不可恢复：删除操作是不可逆的，请谨慎操作。删除后的用户数据将无法恢复。
+4.7
+修改用户密码
+更新日期：2025-3-11
+4.7.1
+接口描述
+该接口用于修改用户的密码。通过指定用户的登录名和新的密码（Base64加密后的字符串）来执行修改操作。
+4.7.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有修改用户密码的权限，具体权限配置请参考系统管理指南。
+4.7.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/users/password
+4.7.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+
+
+Authorization
+
+String
+
+是
+
+通过“获取access_token”接口获取的access_token，格式为 Bearer <access_token>
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+username
+
+String
+
+是
+
+test
+
+需要修改用户的登录名，长度限制1~64个字符
+
+
+password
+
+String
+
+是
+
+WGluZ2ppYXdlaUAyMDIz
+
+密码，需要使用Base64加密后的字符串
+4.7.5
+请求示例
+```json
+{
+    "username": "test",
+    "password": "WGluZ2ppYXdlaUAyMDIz"
+}
+```
+4.7.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+4.7.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+4.7.8
+注意事项
+1. 用户名有效性：username 必须是系统中存在的用户登录名。如果提供的用户名不存在，接口将返回错误信息。
+2. 密码格式：password 必须是Base64加密后的字符串。请确保在发送请求前对新密码进行Base64编码。
+3. 权限控制：调用此接口的应用必须具备修改用户密码的权限。权限配置应在系统管理界面中进行设置，并且应用应通过 Authorization 头传递有效的 access_token。
+4. 响应时间：正常情况下，接口响应时间应小于1秒。如遇超时或异常情况，请检查网络连接及请求参数是否正确。
+5. 密码强度：建议在客户端对密码进行强度校验，以确保密码的安全性。密码强度要求请参考系统安全策略。
+
+5. 通讯录集成连接器事件通知
+通过集成平台提供的用户集成连接器，可以将外部系统的组织架构（包括部门、用户）同步到集成平台。在集成平台中，通过配置映射规则，可以完成部门和用户的合并、关联治理。
+用户集成连接器对外提供Webhook接口，支持接收外部系统组织架构的变更事件，外部系统通过调用该接口，可以实时触发对集成平台的组织架构的修改。
+5.1
+集成连接器事件通知
+更新日期：2025-3-11
+5.1.1
+接口描述
+该接口用于接收来自外部系统的组织架构变更事件通知。通过指定租户编码、用户集成连接器ID和API Key，以及事件类型和相关数据来发送通知。
+5.1.2
+权限说明
+●
+应用类型：内部应用/第三方应用
+●
+权限要求：需要具有接收和处理组织架构变更事件的权限，具体权限配置请参考系统管理指南。
+5.1.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/open/event/{tenantId}/{connectorId}/{apiKey}
+5.1.4
+请求参数
+Header 参数
+参数名
+
+类型
+
+是否必填
+
+描述
+
+
+Content-Type
+
+String
+
+是
+
+application/json
+Path 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+tenantId
+
+String
+
+是
+
+bit
+
+租户编码
+
+
+connectorId
+
+String
+
+是
+
+1701181399261417474
+
+用户集成连接器ID
+
+
+apiKey
+
+String
+
+是
+
+9a217c61e46b461fb5e8766b4e5e01da
+
+API Key
+Body 参数
+参数名
+
+类型
+
+是否必填
+
+示例值
+
+备注
+
+
+event_type
+
+String
+
+是
+
+UPDATE_USER
+
+组织架构变更事件类型：
+- ADD_DEPARTMENT：增加部门
+- UPDATE_DEPARTMENT：修改部门
+- DELETE_DEPARTMENT：删除部门
+- ADD_USER：增加用户
+- UPDATE_USER：修改用户
+- DELETE_USER：删除用户
+
+
+external_ids
+
+Array
+
+否
+
+["710000480641633900", "710000480641633901"]
+
+部门或用户的外部ID列表
+
+
+event_body
+
+JSON对象
+
+否
+
+详见示例
+
+部门或用户对象实体数据，格式与外部系统的用户同步接口API里的部门或用户对象一致。
+注意：external_ids 和 event_body 至少需要提供一个。
+备注：如果提供的是external_ids，则需要提供外部系统的根据部门 ID 查询部门详情信息以及根据用户 ID 查询用户详情的外部系统接口。
+5.1.5
+请求示例
+```json
+{
+    "event_type": "UPDATE_USER",
+    "external_ids": null,
+    "event_body": {
+        "id": 710000480641633900,
+        "name": "s1",
+        "code": "001",
+        "createTime": 1398216937707,
+        "updateTime": 1398160905847,
+        "sortId": 1,
+        "isDeleted": false,
+        "enabled": true,
+        "status": 1,
+        "description": "说明"
+    }
+}
+```
+5.1.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作结果，true 表示成功，false 表示失败
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+5.1.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+5.1.8
+注意事项
+1. 路径参数有效性：tenantId、connectorId 和 apiKey 必须是有效的，并且在系统中已注册。
+2. 事件类型：event_type 必须是预定义的事件类型之一（如 ADD_DEPARTMENT、UPDATE_USER 等）。
+3. 数据完整性：external_ids 和 event_body 至少需要提供一个。如果提供了 external_ids，则不需要提供 event_body；反之亦然。
+4. 权限控制：调用此接口的应用必须具备接收和处理组织架构变更事件的权限。权限配置应在系统管理界面中进行设置，并且应用应通过路径参数传递有效的 tenantId、connectorId 和 apiKey。
+6. 通讯录同步连接器事件通知
+通过集成平台提供的用户同步连接器（支持内置同步连接器和基于 Restful 协议的身份下游自动化连接器），可以将集成平台系统的组织架构（包括部门、用户）同步到下游已配置同步连接器接收方或下游指定 Restful 接口。通过配置映射规则，可以完成部门和用户的映射属性同步。
+用户同步连接器内置事件触发，支持集成平台的系统组织架构的变更事件，通过配置同步连接器或身份下游自动化，下游系统可以实时接收集成平台的组织架构和用户信息的修改事件和属性数据。
+备注：同步连接器或身份下游自动化连接器的同步策略需要配置组织架构同步范围（可选择全量或部分，如果部分范围需要指定具体范围），只有在同步范围内的组织或用户变更事件才会触发事件通知。
+6.1
+同步连接器事件通知
+更新日期：2025-5-7
+6.1.1
+场景描述
+同步的事件触发暂需在集成平台配置同步连接器或身份下游自动化的下游接收接口，应用级别的事件订阅即将支持。
+6.1.2
+方式一：内置同步连接器事件通知
+●
+支持范围：集成平台已内置支持的同步连接器，如钉钉、企业微信、飞书、Windows AD、LDAP、SCIM 和其他已支持的三方下游。
+●
+配置要求：已测试通过的同步连接器，基本信息和同步策略以及属性映射请参阅具体同步连接器的已有说明文档。
+●
+事件通知范围：同步连接器的同步策略>组织架构同步范围。只有设定的同步范围内的组织或用户变更方可事件触发。
+6.1.3
+方式二：身份下游自动化事件通知
+●
+支持范围：下游支持 Restful 协议的接收变更事件类型和变更事件数据的接口适配。
+●
+配置要求：
+○
+建立身份下游自动化连接器，配置基本信息和属性映射以及同步策略。
+■
+具体可参见身份自动化-REST API 配置文档。
+○
+连接流编排
+■
+选择 Webhook 触发应用接收数据接收事件通知数据节点。
+■
+执行应用配置 HTTP 节点，用于下游接收事件通知数据的 HTTP 接口，支持常见的接口鉴权方式。
+●
+Basic Auth
+●
+OAuth 2.0
+●
+Bearer Token
+●
+API Key
+●
+以及适用 Http 的签名算法和验签
+■
+执行应用 HTTP 节点的 Body 参数选择 Webhook 接收数据节点的 value 变量。其他 Header 参数、Path 参数、Query 参数可按照下游接口所需配置。
+○
+事件类型定义
+变更事件类型（ event_type）
+
+类型说明
+
+事件数据格式
+
+备注
+
+
+ADD_DEPARTMENT
+
+增加部门
+
+ {
+    "event_type": "ADD_DEPARTMENT",
+    "部门映射属性名称 1": "部门映射属性值 1",
+    "部门映射属性名称 2": "部门映射属性值 2",
+    "部门映射属性名称 x": "部门映射属性值 x"
+  }
+
+其他部门映射属性可在身份下游自动化的连接器的部门属性映射中配置映射
+
+
+UPDATE_DEPARTMENT
+
+修改部门
+
+{
+    "event_type": "UPDATE_DEPARTMENT",
+    "部门映射属性名称 1": "部门映射属性值 1",
+    "部门映射属性名称 2": "部门映射属性值 2",
+    "部门映射属性名称 x": "部门映射属性值 x"
+  }
+
+其他部门映射属性可在身份下游自动化的连接器的部门属性映射中配置映射
+
+
+DELETE_DEPARTMENT
+
+删除部门
+
+{
+    "event_type": "DELETE_DEPARTMENT",
+    "_org_id": "集成平台部门 Id"
+  }
+
+删除部门需要下游根据集成平台部门 Id 进行删除
+
+
+
+ADD_USER
+
+增加用户
+
+ {
+    "event_type": "ADD_USER",
+    "用户映射属性名称 1": "用户映射属性值 1",
+    "用户映射属性名称 2": "用户映射属性值 2",
+    "用户映射属性名称 x": "用户映射属性值 x"
+  }
+
+其他用户映射属性可在身份下游自动化的连接器的用户属性映射中配置映射
+
+
+UPDATE_USER
+
+修改用户
+
+{
+    "event_type": "UPDATE_USER",
+    "用户映射属性名称 1": "用户映射属性值 1",
+    "用户映射属性名称 2": "用户映射属性值 2",
+    "用户映射属性名称 x": "用户映射属性值 x"
+  }
+
+其他用户映射属性可在身份下游自动化的连接器的用户属性映射中配置映射
+
+
+DELETE_USER
+
+删除用户
+
+{
+    "event_type": "DELETE_USER",
+    "_user_id": "集成平台用户Id"
+  }
+
+删除用户的事件触发前提是已经同步到下游的用户，需要下游根据集成平台用户 Id 进行删除
+[如果下游没有接收到删除用户事件，可在同步连接器的待删除用户查看，并检查同步策略的删除用户阈值设置]
+7. 角色管理
+集成平台支持对第三方应用的角色进行托管，可以通过集成平台管理平台给平台用户分配应用角色，各第三方应用通过集成平台做单点登录时，集成平台会将认证用户所拥有的角色数据通过id_token或userinfo返回给第三方应用；各第三方应用可以通过如下的接口对角色进行修改或查询。
+7.1
+ 创建角色
+更新日期：2026-1-13
+7.1.1
+接口描述
+此接口用于在集成平台中创建新的角色。角色可以是静态的或动态的，其中静态角色直接分配给用户，而动态角色则基于一定的条件自动匹配用户。
+7.1.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.1.3
+基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/tags
+7.1.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Body
+
+name
+
+"用户管理员"
+
+是
+
+角色名称，长度限制1~64个字符
+
+
+Body
+
+code
+
+"USER_ADMIN"
+
+是
+
+角色编码，格式要求：只允许英文、数字、下划线的组合
+
+
+Body
+
+description
+
+"用户管理员"
+
+否
+
+角色描述，长度限制1~128个字符
+
+
+Body
+
+type
+
+"STATIC"
+
+是
+
+动态角色或者静态角色, STATIC或者DYNAMIC，集成的角色默认为静态角色
+
+
+Body
+
+expression
+
+-
+
+否
+
+角色表达式，静态角色时无需填写表达式
+
+
+Body
+
+app_id
+
+17656724218068
+
+是
+
+应用id，长度限制1~19个字符
+
+
+Body
+
+groups
+
+["1821113087609040898"]
+
+否
+
+角色所属角色组
+7.1.5
+请求示例
+创建动态角色
+```json
+{
+    "name": "test",
+    "code": "test",
+    "type": "DYNAMIC",
+    "app_id": 1765672421806866434,
+    "expression": {
+        "fields": [
+            {
+                "field_id": 1710318657834,
+                "type": "user",
+                "attribute": "user_job_number",
+                "op": "sw",
+                "value": "110"
+            }
+        ]
+    }
+}
+```
+创建静态角色
+```json
+{
+    "name": "静态角色",
+    "code": "test_static",
+    "type": "STATIC",
+    "app_id": 1765672421806866434,
+    "groups":["1821113087609040898"]
+}
+```
+7.1.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+String
+
+创建成功的角色ID
+7.1.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": "1826878366452600834"
+}
+```
+7.1.8
+注意事项
+●
+角色编码：角色编码必须唯一且符合格式要求（仅包含英文、数字和下划线）。
+●
+应用ID：确保提供的应用ID有效且你有权限对其进行操作。
+●
+角色类型：如果创建的是动态角色，请确保表达式字段正确无误。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+7.2
+修改角色
+更新日期：2026-1-13
+7.2.1
+接口描述
+此接口用于在集成平台中修改已有的角色信息。可以修改角色的名称、描述和表达式等属性。
+7.2.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.2.3
+基本信息
+●
+请求方式：PUT
+●
+请求地址：/iam/api/tags/{id}
+7.2.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Path
+
+id
+
+"12345678"
+
+是
+
+角色ID，长度限制1~19个字符
+
+
+Body
+
+name
+
+"用户管理员"
+
+是
+
+角色名称，长度限制1~64个字符
+
+
+Body
+
+description
+
+"用户管理员"
+
+否
+
+角色描述，长度限制1~128个字符
+
+
+Body
+
+expression
+
+-
+
+否
+
+角色表达式，静态角色时无需填写表达式
+
+
+Body
+
+groups
+
+["1821113087609040898"]
+
+否
+
+角色所属角色组
+7.2.5
+请求示例
+```json
+{
+    "id":123,
+    "description": "测试角色",
+    "name": "测试角色",
+    "groups":["1821113087609040898"]
+}
+```
+7.2.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+7.2.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS"
+}
+```
+7.2.8
+注意事项
+●
+角色ID：确保提供的角色ID有效且你有权限对其进行操作。
+●
+角色名称：角色名称必须符合长度限制（1~64个字符）。
+●
+角色描述：角色描述可选，但若提供则需符合长度限制（1~128个字符）。
+●
+角色表达式：如果修改的是动态角色，请确保表达式字段正确无误。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+
+7.3
+删除角色
+更新日期：2025-3-11
+7.3.1
+接口描述
+此接口用于在集成平台中删除指定的角色。删除成功后，角色将不再存在于系统中。
+7.3.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.3.3
+基本信息
+●
+请求方式：DELETE
+●
+请求地址：/iam/api/tags/{id}
+7.3.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Path
+
+id
+
+"12345678"
+
+是
+
+角色ID，长度限制1~19个字符
+7.3.5
+请求示例
+```http
+DELETE /iam/api/tags/12345678
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.3.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+被删除的角色信息对象
+7.3.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "description": "自动化测试_创建角色11ee",
+        "expression": null,
+        "name": "autotest_role1_edit",
+        "groups": null,
+        "id": "1826879201307840514",
+        "app_id": null,
+        "code": "autotest_role11",
+        "type": "STATIC",
+        "create_by": null,
+        "create_time": "2024-08-23 15:08:38",
+        "update_time": "2024-08-23 15:09:27",
+        "user_counts": null
+    }
+}
+```
+7.3.8
+注意事项
+●
+角色ID：确保提供的角色ID有效且你有权限对其进行操作。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+
+●
+数据备份：删除角色是一个不可逆的操作，请在执行前确认不需要该角色。
+●
+关联影响：删除角色可能会影响与其关联的用户和权限设置，请谨慎操作。
+7.4
+查询角色列表
+更新日期：2025-3-11
+7.4.1
+接口描述
+此接口用于在集成平台中查询应用下的角色列表，并支持分页查询。可以通过应用ID、模糊查询条件和角色类型进行过滤。
+7.4.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.4.3
+基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/tags/search
+7.4.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Body
+
+app_id
+
+"123456"
+
+是
+
+应用ID，必须指定一个应用，长度限制1~19个字符
+
+
+Body
+
+filter
+
+"USER_ADMIN"
+
+否
+
+模糊查询条件，可以是角色ID、角色编码或角色名称
+
+
+Body
+
+type
+
+"STATIC"
+
+否
+
+角色类型，静态角色（STATIC）或动态角色（DYNAMIC）
+
+
+Body
+
+page
+
+1
+
+是
+
+页码
+
+
+Body
+
+size
+
+10
+
+是
+
+每页条数
+7.4.5
+请求示例
+```json
+{
+    "size": 10,
+    "page": 1,
+    "app_id": "1765672421806866435"
+}
+```
+7.4.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+分页结果对象
+
+
+data.items
+
+Array
+
+角色列表
+
+
+data.total
+
+Integer
+
+总记录数
+
+
+data.size
+
+Integer
+
+每页条数
+
+
+data.page
+
+Integer
+
+当前页码
+
+
+data.orders
+
+Array
+
+排序字段
+
+
+data.search_count
+
+Boolean
+
+是否查询总数
+
+
+data.pages
+
+Integer
+
+总页数
+7.4.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "items": [
+            {
+                "description": "自动化测试_创建角色",
+                "expression": null,
+                "name": "autotest_role1",
+                "groups": null,
+                "id": "1826878366452600834",
+                "app_id": null,
+                "code": "autotest_role1",
+                "type": "STATIC",
+                "create_by": null,
+                "create_time": "2024-08-23 15:05:19",
+                "update_time": "2024-08-23 15:05:19",
+                "user_counts": 0
+            }
+        ],
+        "total": 1,
+        "size": 10,
+        "page": 1,
+
+        "orders": [ ],
+
+        "search_count": true,
+        "pages": 1
+    }
+}
+```
+7.4.8
+注意事项
+●
+应用ID：确保提供的应用ID有效且你有权限对其进行操作。
+●
+分页参数：page 和 size 参数必须提供，以控制分页查询的结果。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+●
+查询条件：filter 和 type 参数是可选的，但可以用来进一步筛选角色列表。
+7.5
+获取单个角色详情
+更新日期：2025-3-11
+7.5.1
+接口描述
+此接口用于在集成平台中获取指定角色的详细信息。通过角色ID可以获取该角色的所有相关信息。
+7.5.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.5.3
+基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tags/{id}
+7.5.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Path
+
+id
+
+"123456"
+
+是
+
+角色ID，长度限制1~19个字符
+7.5.5
+请求示例
+```http
+GET /iam/api/tags/123456
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.5.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+角色信息对象
+
+
+data.description
+
+String
+
+角色描述
+
+
+data.expression
+
+String
+
+表达式（可能为空）
+
+
+data.name
+
+String
+
+角色名称
+
+
+data.groups
+
+Array
+
+关联的组（可能为空）
+
+
+data.id
+
+String
+
+角色ID
+
+
+data.app_id
+
+String
+
+应用ID（可能为空）
+
+
+data.code
+
+String
+
+角色编码
+
+
+data.type
+
+String
+
+角色类型（STATIC 或 DYNAMIC）
+
+
+data.create_by
+
+String
+
+创建者（可能为空）
+
+
+data.create_time
+
+String
+
+创建时间
+
+
+data.update_time
+
+String
+
+更新时间
+
+
+data.user_counts
+
+Integer
+
+用户数量（可能为空）
+7.5.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "description": "自动化测试_创建角色",
+        "expression": null,
+        "name": "autotest_role1",
+        "groups": null,
+        "id": "1826878366452600834",
+        "app_id": null,
+        "code": "autotest_role1",
+        "type": "STATIC",
+        "create_by": null,
+        "create_time": "2024-08-23 15:05:19",
+        "update_time": "2024-08-23 15:05:19",
+        "user_counts": null
+    }
+}
+```
+7.5.8
+注意事项
+●
+角色ID：确保提供的角色ID有效且你有权限对其进行操作。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+●
+安全性：保护好你的access_token，不要泄露给他人。
+●
+数据完整性：返回的角色信息中，某些字段如expression、groups、app_id 和 user_counts 可能为空，请根据实际需求处理这些字段。
+●
+时间格式：create_time 和 update_time 字段的时间格式为 YYYY-MM-DD HH:MM:SS。
+
+7.6
+根据应用ID和用户ID获取角色列表
+更新日期：2025-3-11
+7.6.1
+接口描述
+此接口用于在集成平台中根据指定的应用ID和用户ID获取该用户在该应用中的角色列表。
+7.6.2
+权限说明
+●
+管理员权限：只有拥有管理员权限的用户才能调用此接口。
+●
+应用权限：调用者需要对指定的应用具有管理权限。
+7.6.3
+基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tags/getTagList
+7.6.4
+请求参数
+类型
+
+参数名
+
+示例值
+
+必填
+
+描述
+
+
+Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token"接口获取的access_token
+
+
+Query
+
+app_id
+
+"123"
+
+是
+
+应用ID，长度限制1~19个字符
+
+
+Query
+
+user_id
+
+"123"
+
+是
+
+用户ID，长度限制1~19个字符
+7.6.5
+请求示例
+```http
+GET /iam/api/tags/getTagList?app_id=123&user_id=123
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.6.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Array
+
+角色列表
+data 数组中的参数
+参数名
+
+类型
+
+描述
+
+
+description
+
+String
+
+角色描述
+
+
+expression
+
+String
+
+表达式（可能为空）
+
+
+name
+
+String
+
+角色名称
+
+
+groups
+
+Array
+
+关联的组（可能为空）
+
+
+id
+
+String
+
+角色ID
+
+
+app_id
+
+String
+
+应用ID（可能为空）
+
+
+code
+
+String
+
+角色编码
+
+
+type
+
+String
+
+角色类型（STATIC 或 DYNAMIC）
+
+
+create_by
+
+String
+
+创建者（可能为空）
+
+
+create_time
+
+String
+
+创建时间
+
+
+update_time
+
+String
+
+更新时间
+
+
+user_counts
+
+Integer
+
+用户数量（可能为空）
+7.6.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "description": "自动化测试_创建角色",
+            "expression": null,
+            "name": "autotest_role1",
+            "groups": null,
+            "id": "1826878366452600834",
+            "app_id": null,
+            "code": "autotest_role1",
+            "type": "STATIC",
+            "create_by": null,
+            "create_time": "2024-08-23 15:05:19",
+            "update_time": "2024-08-23 15:18:35",
+            "user_counts": null
+        }
+    ]
+}
+```
+7.6.8
+注意事项
+●
+应用ID和用户ID：确保提供的应用ID和用户ID有效且你有权限对其进行操作。
+●
+频率限制：请遵守平台的API调用频率限制，避免因频繁调用导致被封禁。
+●
+数据完整性：返回的角色信息中，某些字段如expression、groups、app_id 和 user_counts 可能为空，请根据实际需求处理这些字段。
+●
+时间格式：create_time 和 update_time 字段的时间格式为 YYYY-MM-DD HH:MM:SS
+好的，我将按照钉钉文档的格式重新组织你提供的接口文档。以下是详细的接口文档，包括权限说明、基本信息、参数、请求示例、返回参数和注意事项等部分。
+7.7
+查看角色所对应的用户列表
+更新日期：2025-03-11
+7.7.1
+接口描述
+该接口用于查看指定角色所对应的用户列表。
+7.7.2
+权限说明
+●
+需要具有查看角色用户列表的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.7.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tags/{id}/users
+7.7.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+"123456"
+
+是
+
+角色ID，长度限制1~19个字符
+
+
+Query 参数
+
+filter
+
+"用户"
+
+否
+
+作为过滤条件，在子串匹配时过滤用户登录名，全名，电子邮件和移动电话的属性的字符串
+
+
+Query 参数
+
+page
+
+1
+
+是
+
+页号
+
+
+Query 参数
+
+size
+
+50
+
+是
+
+每页允许的最大记录数为100
+7.7.5
+请求示例
+```http
+GET /iam/api/tags/123456/users?page=1&size=50&filter=用户 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.7.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+用户列表数据
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+items
+
+Array
+
+用户列表
+
+
+total
+
+Integer
+
+总记录数
+
+
+size
+
+Integer
+
+每页记录数
+
+
+page
+
+Integer
+
+当前页号
+
+
+orders
+
+Array
+
+排序信息（可能为空）
+
+
+search_count
+
+Boolean
+
+是否计算总记录数
+
+
+pages
+
+Integer
+
+总页数
+items 数组中的参数
+参数名
+
+类型
+
+描述
+
+
+tenant_id
+
+String
+
+租户ID
+
+
+end_date
+
+String
+
+结束日期（可能为空）
+
+
+sub
+
+String
+
+用户唯一标识
+
+
+zoneinfo
+
+String
+
+时区信息（可能为空）
+
+
+birthdate
+
+String
+
+出生日期（可能为空）
+
+
+gender
+
+String
+
+性别（可能为空）
+
+
+telephone_number
+
+String
+
+电话号码（可能为空）
+
+
+cert
+
+String
+
+证书（可能为空）
+
+
+preferred_username
+
+String
+
+偏好用户名（可能为空）
+
+
+locale
+
+String
+
+语言环境（可能为空）
+
+
+type
+
+String
+
+用户类型
+
+
+title
+
+String
+
+职位（可能为空）
+
+
+hired_date
+
+String
+
+入职日期（可能为空）
+
+
+create_by
+
+String
+
+创建者
+
+
+password_status
+
+String
+
+密码状态
+
+
+update_time
+
+String
+
+更新时间
+
+
+pwd_expired_time
+
+String
+
+密码过期时间（可能为空）
+
+
+pwd_changed_time
+
+String
+
+密码更改时间（可能为空）
+
+
+connector_uid
+
+String
+
+连接器UID（可能为空）
+
+
+nickname
+
+String
+
+昵称
+
+
+connector_type
+
+String
+
+连接器类型（可能为空）
+
+
+checksum
+
+String
+
+校验和（内部参数）
+
+
+user_job_number
+
+String
+
+工号（可能为空）
+
+
+update_by
+
+String
+
+更新者
+
+
+email
+
+String
+
+电子邮件
+
+
+connector_sub_id
+
+String
+
+连接器子ID（可能为空）
+
+
+start_date
+
+String
+
+开始日期（可能为空）
+
+
+come_from
+
+String
+
+来源
+
+
+website
+
+String
+
+网站（可能为空）
+
+
+connector_batch_no
+
+String
+
+连
+
+
+接器批次号（可能为空）
+
+
+
+
+
+
+user_name
+
+String
+
+用户名
+
+
+given_name
+
+String
+
+名字（可能为空）
+
+
+family_name
+
+String
+
+姓氏（可能为空）
+
+
+middle_name
+
+String
+
+中间名（可能为空）
+
+
+profile
+
+String
+
+个人简介（可能为空）
+
+
+department
+
+String
+
+部门（可能为空）
+
+
+address
+
+String
+
+地址（可能为空）
+
+
+city
+
+String
+
+城市（可能为空）
+
+
+state
+
+String
+
+州/省（可能为空）
+
+
+country
+
+String
+
+国家（可能为空）
+
+
+postal_code
+
+String
+
+邮政编码（可能为空）
+7.7.7
+返回示例
+```json
+{
+  "result": true,
+  "error": null,
+  "error_description": null,
+  "data": {
+    "items": [
+      {
+        "tenant_id": "001",
+        "end_date": null,
+        "sub": "user-001",
+        "zoneinfo": "Asia/Shanghai",
+        "birthdate": "1980-01-01",
+        "gender": "male",
+        "telephone_number": "1234567890",
+        "cert": null,
+        "preferred_username": "john.doe",
+        "locale": "en-US",
+        "type": "employee",
+        "title": "Software Engineer",
+        "hired_date": "2020-01-01",
+        "create_by": "admin",
+        "password_status": "active",
+        "update_time": "2023-08-01T10:00:00Z",
+        "pwd_expired_time": null,
+        "pwd_changed_time": "2023-07-01T10:00:00Z",
+        "connector_uid": null,
+        "nickname": "JD",
+        "connector_type": null,
+        "checksum": "abcdef123456",
+        "user_job_number": "001",
+        "update_by": "admin",
+        "email": "john.doe@example.com",
+        "connector_sub_id": null,
+        "start_date": null,
+        "come_from": "internal",
+        "website": null,
+```
+7.7.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查看角色用户列表的权限。
+2. 分页参数：page和size是必填参数，用于分页查询。size的最大值为100。
+3. 过滤条件：filter参数用于子串匹配，可以过滤用户登录名、全名、电子邮件和移动电话等属性。
+4. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+
+7.8
+给多个用户添加静态角色
+更新日期：2025-03-11
+7.8.1
+接口描述
+该接口用于给多个用户添加指定的静态角色。
+7.8.2
+权限说明
+●
+需要具有给用户添加静态角色的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.8.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/tags/{id}/users
+7.8.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+"123456"
+
+是
+
+角色ID，长度限制1~19个字符
+
+
+Request Body
+
+usernames
+
+["usera", "userb"]
+
+是
+
+用户名集合，最多不能超过20个
+7.8.5
+请求示例
+```json
+POST /iam/api/tags/123456/users HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+Content-Type: application/json
+
+{
+    "usernames": [
+        "autotest_user08231",
+        "autotest_user08232"
+    ],
+    "name": "测试"
+}
+```
+7.8.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+操作结果数据
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+success
+
+Array
+
+成功添加角色的用户名列表
+
+
+failed
+
+Array
+
+添加角色失败的用户名列表
+7.8.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "success": [
+            "autotest_user08231",
+            "autotest_user08232"
+        ],
+
+        "failed": [ ]
+
+    }
+}
+```
+7.8.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有给用户添加静态角色的权限。
+2. 角色ID：id参数是必填项，表示要添加的角色ID，长度限制为1~19个字符。
+3. 用户名集合：usernames参数是必填项，表示要添加角色的用户名集合，最多不能超过20个。
+4. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+5. 部分成功处理：如果部分用户添加角色成功，部分失败，data对象中的success和failed数组将分别列出成功和失败的用户名。
+6. 请求格式：请求体必须是JSON格式，并且包含usernames字段。name字段在示例中出现，但并非必填项，可以根据实际需求决定是否使用。
+7.9
+删除用户静态角色
+更新日期：2025-03-11
+7.9.1
+接口描述
+该接口用于删除指定用户的静态角色。
+7.9.2
+权限说明
+●
+需要具有删除用户静态角色的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.9.3
+接口基本信息
+●
+请求方式：DELETE
+●
+请求地址：/iam/api/tags/{id}/users
+7.9.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+"123456"
+
+是
+
+角色ID，长度限制1~19个字符
+
+
+Query 参数
+
+username
+
+"usera"
+
+是
+
+用户名，长度限制1~64个字符
+7.9.5
+请求示例
+```http
+DELETE /iam/api/tags/123456/users?username=usera HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.9.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+操作结果数据
+data 对象中的参数
+参数名
+
+类型
+
+描述
+
+
+description
+
+String
+
+角色描述
+
+
+expression
+
+String
+
+表达式（可为空）
+
+
+name
+
+String
+
+角色名称
+
+
+groups
+
+Array
+
+组信息（可为空）
+
+
+id
+
+String
+
+角色ID
+
+
+app_id
+
+String
+
+应用ID（可为空）
+
+
+code
+
+String
+
+角色代码
+
+
+type
+
+String
+
+角色类型（例如：STATIC）
+
+
+create_by
+
+String
+
+创建者（可为空）
+
+
+create_time
+
+String
+
+创建时间
+
+
+update_time
+
+String
+
+更新时间
+
+
+user_counts
+
+Integer
+
+用户数量（可为空）
+7.9.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "description": "自动化测试_创建角色",
+        "expression": null,
+        "name": "autotest_role1",
+        "groups": null,
+        "id": "1826878366452600834",
+        "app_id": null,
+        "code": "autotest_role1",
+        "type": "STATIC",
+        "create_by": null,
+        "create_time": "2024-08-23 15:05:19",
+        "update_time": "2024-08-23 15:34:31",
+        "user_counts": null
+    }
+}
+```
+7.9.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有删除用户静态角色的权限。
+2. 角色ID：id参数是必填项，表示要删除的角色ID，长度限制为1~19个字符。
+3. 用户名：username参数是必填项，表示要删除角色的用户名，长度限制为1~64个字符。
+4. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+5. 数据结构：返回的data对象包含了被删除角色的详细信息，包括角色描述、名称、ID等。
+6. 请求格式：请求必须使用DELETE方法，并且username参数需要作为查询参数传递。
+
+7.10
+用户信息加密
+更新日期：2025-03-11
+7.10.1
+接口描述
+该接口用于根据应用和用户的用户名对用户信息进行AES加密。AES加密时，key的长度是128位，不足128位时填充0至128位。
+7.10.2
+权限说明
+●
+需要具有访问用户信息加密接口的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.10.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tag/aes
+7.10.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Query 参数
+
+tag_code
+
+group1
+
+是
+
+应用Code
+
+
+Query 参数
+
+username
+
+user1
+
+是
+
+用户名，长度限制1~64个字符
+7.10.5
+请求示例
+```http
+GET /iam/api/tag/aes?tag_code=group1&username=user1 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.10.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+String
+
+加密后的用户信息
+7.10.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": "+3Hvn2NBGZYp8dIe+iVUMJJCHwUSFwnGT3sazEkvpmU="
+}
+```
+7.10.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有访问用户信息加密接口的权限。
+2. 应用Code：tag_code参数是必填项，表示应用的Code。
+3. 用户名：username参数是必填项，表示要加密的用户名，长度限制为1~64个字符。
+4. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+5. 数据结构：返回的data字段包含了加密后的用户信息。
+6. 请求格式：请求必须使用GET方法，并且tag_code和username参数需要作为查询参数传递。
+
+7.11
+创建角色应用
+更新日期：2025-03-11
+7.11.1
+接口描述
+该接口用于创建一个新的角色应用。
+7.11.2
+权限说明
+●
+需要具有创建角色应用的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.11.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/iam/api/tagGroup
+7.11.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Body 参数
+
+app_name
+
+"测试应用"
+
+是
+
+应用名称，长度限制1~64个字符
+
+
+Body 参数
+
+app_code
+
+"test_role"
+
+是
+
+应用编码，格式要求：只允许英文、数字、下划线的组合
+
+
+Body 参数
+
+description
+
+"测试应用"
+
+否
+
+应用描述，长度限制1~128个字符
+7.11.5
+请求示例
+```json
+POST /iam/api/tagGroup HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+Content-Type: application/json
+
+{
+  "app_name": "测试角色应用",
+  "app_code": "test_insert2",
+  "description": ""
+}
+```
+7.11.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Boolean
+
+操作结果数据
+7.11.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": true
+}
+```
+7.11.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有创建角色应用的权限。
+2. 应用名称：app_name参数是必填项，表示应用的名称，长度限制为1~64个字符。
+3. 应用编码：app_code参数是必填项，表示应用的编码，格式要求只允许英文、数字、下划线的组合。
+4. 应用描述：description参数是可选项，表示应用的描述，长度限制为1~128个字符。
+5. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+6. 数据结构：返回的data字段表示操作是否成功。
+7. 请求格式：请求必须使用POST方法，并且请求体（Body）需要以JSON格式传递。
+7.12
+删除角色应用
+更新日期：2025-03-11
+7.12.1
+接口描述
+该接口用于删除指定的角色应用。
+7.12.2
+权限说明
+●
+需要具有删除角色应用的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.12.3
+接口基本信息
+●
+请求方式：DELETE
+●
+请求地址：/iam/api/tagGroup/{id}
+7.12.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+1826136253774745602
+
+是
+
+角色应用的ID，长度限制1~19个字符
+7.12.5
+请求示例
+```http
+DELETE /iam/api/tagGroup/1826136253774745602 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.12.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+删除的角色应用信息
+data 参数详细信息
+data 参数名
+
+类型
+
+描述
+
+示例值
+
+
+id
+
+String
+
+角色应用的ID
+
+1827981076517421058
+
+
+app_name
+
+String
+
+应用名称
+
+test
+
+
+app_code
+
+String
+
+应用编码
+
+testApp
+
+
+is_default
+
+Integer
+
+是否为默认应用（1表示是，默认值为0）
+
+1
+
+
+description
+
+String
+
+应用描述
+
+null
+
+
+create_time
+
+String
+
+创建时间
+
+2024-08-26 16:07:06
+
+
+create_by
+
+String
+
+创建者
+
+admin
+
+
+update_time
+
+String
+
+更新时间
+
+2024-08-26 16:07:06
+
+
+update_by
+
+String
+
+更新者
+
+admin
+
+
+tenant_id
+
+String
+
+租户ID
+
+bit
+7.12.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "id": "1827981076517421058",
+        "app_name": "test",
+        "app_code": "testApp",
+        "is_default": 1,
+        "description": null,
+        "create_time": "2024-08-26 16:07:06",
+        "create_by": "admin",
+        "update_time": "2024-08-26 16:07:06",
+        "update_by": "admin",
+        "tenant_id": "bit"
+    }
+}
+```
+7.12.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有删除角色应用的权限。
+2. 角色应用ID：id参数是必填项，表示要删除的角色应用的ID，长度限制为1~19个字符。
+3. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+4. 数据结构：返回的data字段包含了被删除的角色应用的信息。
+5. 请求格式：请求必须使用DELETE方法，并且id参数需要作为路径参数传递。
+7.13
+修改角色应用
+更新日期：2025-03-11
+7.13.1
+接口描述
+该接口用于修改指定的角色应用信息。
+7.13.2
+权限说明
+●
+需要具有修改角色应用的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.13.3
+接口基本信息
+●
+请求方式：PATCH
+●
+请求地址：/iam/api/tagGroup/{id}
+7.13.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+1827982079581028354
+
+是
+
+应用ID，长度限制1~19个字符
+
+
+Request Body
+
+app_name
+
+"测试应用"
+
+否
+
+应用名称，长度限制1~64个字符
+
+
+
+
+app_code
+
+"test_app"
+
+否
+
+应用编码，格式要求：只允许英文、数字、下划线的组合
+
+
+
+
+description
+
+"测试应用"
+
+否
+
+应用描述，长度限制1~128个字符
+7.13.5
+请求示例
+```json
+PATCH /iam/api/tagGroup/1827982079581028354 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+Content-Type: application/json
+
+{
+  "app_name": "测试角色应用",
+  "app_code": "test_app",
+  "description": "测试角色应用"
+}
+```
+7.13.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Boolean
+
+是否成功修改
+7.13.7
+返回示例
+```json
+{
+  "result": true,
+  "error": "0",
+  "error_description": "SUCCESS",
+  "data": true
+}
+```
+7.13.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有修改角色应用的权限。
+2. 应用ID：id参数是必填项，表示要修改的角色应用的ID，长度限制为1~19个字符。
+3. 请求体：请求体中的参数（如app_name、app_code和description）都是可选的，但至少需要提供一个参数以进行修改。
+4. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+5. 请求格式：请求必须使用PATCH方法，并且id参数需要作为路径参数传递。
+6. 数据校验：app_code只能包含英文、数字和下划线的组合，其他字符会导致请求失败。
+
+7.14
+获取角色应用
+更新日期：2025-03-11
+7.14.1
+接口描述
+该接口用于获取角色应用信息，支持通过模糊查询来过滤符合条件的应用。
+7.14.2
+权限说明
+●
+需要具有查询角色应用的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.14.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tagGroup
+7.14.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Query 参数
+
+filter
+
+"DEFAULT"
+
+否
+
+模糊查询符合条件的应用，目前支持应用的名称、编码、id，不传查所有
+7.14.5
+请求示例
+```http
+GET /iam/api/tagGroup?filter=DEFAULT HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+当然，可以将data部分的详细信息也写在表格中。以下是完整的返回参数表格，包括data部分的详细字段描述：
+7.14.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Array[Object]
+
+查询到的角色应用信息列表
+data 中的对象字段：
+字段名
+
+类型
+
+描述
+
+
+create_by
+
+String
+
+创建者（可为空）
+
+
+tenant_id
+
+String
+
+租户ID
+
+
+app_name
+
+String
+
+应用名称
+
+
+update_time
+
+String
+
+更新时间（ISO 8601格式）
+
+
+create_time
+
+String
+
+创建时间（ISO 8601格式）
+
+
+description
+
+String
+
+应用描述
+
+
+id
+
+String
+
+应用ID
+
+
+is_default
+
+Integer
+
+是否为默认应用（1表示是，默认为0）
+
+
+update_by
+
+String
+
+更新者（可为空）
+
+
+app_code
+
+String
+
+应用编码
+7.14.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "create_by": null,
+            "tenant_id": "bit",
+            "app_name": "autotest_app_role1",
+            "update_time": "2024-08-23T06:40:28.000+00:00",
+            "create_time": "2024-08-23T06:40:28.000+00:00",
+            "description": "自动化测试_创建角色应用",
+            "id": "1826872114053959682",
+            "is_default": 1,
+            "update_by": null,
+            "app_code": "autotest_app_role1"
+        }
+    ]
+}
+```
+7.14.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查询角色应用的权限。
+2. 查询条件：filter参数是可选的，用于模糊查询符合条件的应用。如果不传递该参数，则返回所有角色应用信息。
+3. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+4. 请求格式：请求必须使用GET方法，并且filter参数需要作为查询参数传递。
+5. 数据校验：filter参数可以包含应用的名称、编码或ID，用于模糊匹配。
+7.15
+获取应用对应的角色列表
+更新日期：2025-03-11
+7.15.1
+接口描述
+该接口用于获取指定应用的角色列表。
+7.15.2
+权限说明
+●
+需要具有查询应用角色的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.15.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tagGroup/getTagList
+7.15.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Query 参数
+
+app_id
+
+"123456"
+
+是
+
+应用ID，长度限制1~19个字符
+7.15.5
+请求示例
+```http
+GET /iam/api/tagGroup/getTagList?app_id=123456 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.15.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Array[Object]
+
+查询到的角色列表
+data 中的对象字段：
+字段名
+
+类型
+
+描述
+
+
+description
+
+String
+
+角色描述
+
+
+expression
+
+String
+
+表达式（可为空）
+
+
+name
+
+String
+
+角色名称
+
+
+id
+
+String
+
+角色ID
+
+
+code
+
+String
+
+角色编码
+
+
+type
+
+String
+
+角色类型（例如：STATIC）
+
+
+create_by
+
+String
+
+创建者
+
+
+create_time
+
+String
+
+创建时间（格式：YYYY-MM-DD HH:MM:SS）
+
+
+update_time
+
+String
+
+更新时间（格式：YYYY-MM-DD HH:MM:SS）
+7.15.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "description": "测试角色",
+            "expression": null,
+            "name": "测试角色",
+            "id": "1766732768795627522",
+            "code": "Test",
+            "type": "STATIC",
+            "create_by": "admin",
+            "create_time": "2024-03-10 15:48:11",
+            "update_time": "2024-03-10 15:48:11"
+        }
+    ]
+}
+```
+7.15.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查询应用角色的权限。
+2. 必填参数：app_id是必填参数，且长度限制为1~19个字符。
+3. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+4. 请求格式：请求必须使用GET方法，并且app_id参数需要作为查询参数传递。
+5. 数据校验：app_id参数必须符合长度限制，并且是有效的应用ID。
+7.16
+根据应用ID获取角色应用详情
+更新日期：2025-03-11
+7.16.1
+接口描述
+该接口用于根据指定的应用ID获取角色应用的详细信息。
+7.16.2
+权限说明
+●
+需要具有查询应用详情的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.16.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tagGroup/{id}
+7.16.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+"1765672421806866435"
+
+是
+
+应用ID，长度限制1~19个字符
+7.16.5
+请求示例
+```http
+GET /iam/api/tagGroup/1765672421806866435 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.16.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+查询到的角色应用详情
+data 中的对象字段：
+字段名
+
+类型
+
+描述
+
+
+id
+
+String
+
+应用ID
+
+
+app_name
+
+String
+
+应用名称
+
+
+app_code
+
+String
+
+应用编码
+
+
+is_default
+
+Integer
+
+是否为默认应用（1表示是，默认为0）
+
+
+description
+
+String
+
+应用描述（可为空）
+
+
+create_time
+
+String
+
+创建时间（格式：YYYY-MM-DD HH:MM:SS）
+
+
+create_by
+
+String
+
+创建者
+
+
+update_time
+
+String
+
+更新时间（格式：YYYY-MM-DD HH:MM:SS）
+
+
+update_by
+
+String
+
+更新者
+
+
+tenant_id
+
+String
+
+租户ID
+7.16.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "id": "1765672421806866435",
+        "app_name": "新建应用",
+        "app_code": "test",
+        "is_default": 1,
+        "description": null,
+        "create_time": "2024-03-08 18:55:47",
+        "create_by": "admin",
+        "update_time": "2024-03-08 18:55:52",
+        "update_by": "admin",
+        "tenant_id": "bit"
+    }
+}
+```
+7.16.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查询应用详情的权限。
+2. 必填参数：id是必填参数，且长度限制为1~19个字符。
+3. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+4. 请求格式：请求必须使用GET方法，并且id参数需要作为路径参数传递。
+5. 数据校验：id参数必须符合长度限制，并且是有效的应用ID。
+7.17
+根据角色应用编码获取角色应用详情
+更新日期：2025-03-11
+7.17.1
+接口描述
+该接口用于根据指定的角色应用编码获取角色应用的详细信息。
+7.17.2
+权限说明
+●
+需要具有查询角色应用详情的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.17.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tagGroup/getTagGroup/{code}
+7.17.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+code
+
+"test"
+
+是
+
+角色应用编码
+7.17.5
+请求示例
+```http
+GET /iam/api/tagGroup/getTagGroup/test HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.17.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Object
+
+查询到的角色应用详情
+data 中的对象字段：
+字段名
+
+类型
+
+描述
+
+
+id
+
+String
+
+应用ID
+
+
+app_name
+
+String
+
+应用名称
+
+
+app_code
+
+String
+
+应用编码
+
+
+is_default
+
+Integer
+
+是否为默认应用（1表示是，默认为0）
+
+
+description
+
+String
+
+应用描述（可为空）
+
+
+create_time
+
+String
+
+创建时间（格式：YYYY-MM-DD HH:MM:SS）
+
+
+create_by
+
+String
+
+创建者
+
+
+update_time
+
+String
+
+更新时间（格式：YYYY-MM-DD HH:MM:SS）
+
+
+update_by
+
+String
+
+更新者
+
+
+tenant_id
+
+String
+
+租户ID
+7.17.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": {
+        "id": "1765672421806866435",
+        "app_name": "新建角色应用1",
+        "app_code": "test",
+        "is_default": 1,
+        "description": null,
+        "create_time": "2024-03-08 18:55:47",
+        "create_by": "admin",
+        "update_time": "2024-03-08 18:55:52",
+        "update_by": "admin",
+        "tenant_id": "bit"
+    }
+}
+```
+7.17.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查询角色应用详情的权限。
+2. 必填参数：code是必填参数，且必须是有效的角色应用编码。
+3. 响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+4. 请求格式：请求必须使用GET方法，并且code参数需要作为路径参数传递。
+5. 数据校验：code参数必须是有效的角色应用编码。
+7.18
+修改角色应用信息
+更新日期：2025-03-11
+7.18.1
+接口描述
+该接口用于修改指定ID的角色应用信息。
+7.18.2
+权限说明
+●
+需要具有修改角色应用信息的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.18.3
+接口基本信息
+●
+请求方式：PATCH
+●
+请求地址：/iam/api/tagGroup/{id}
+7.18.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Path 参数
+
+id
+
+"1765672421806866435"
+
+是
+
+角色应用ID，长度限制1~19个字符
+
+
+Request Body
+
+app_name
+
+"测试应用"
+
+是
+
+应用名称，一般应用才允许修改应用名称（1表示一般应用，0表示默认应用），长度限制1~64个字符
+
+
+
+
+app_code
+
+"test_role"
+
+是
+
+应用编码，格式要求：只允许英文、数字、下划线的组合
+
+
+
+
+description
+
+"测试角色应用"
+
+否
+
+角色应用描述，长度限制1~128个字符
+7.18.5
+请求示例
+```json
+PATCH /iam/api/tagGroup/1765672421806866435 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+Content-Type: application/json
+
+{
+    "app_name": "autotest_app_role21",
+    "app_code": "autotest_app_role21",
+    "description": "自动化测试_创建角色应用"
+}
+```
+7.18.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Boolean
+
+操作结果，成功为true，失败为false
+7.18.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": true
+}
+```
+7.18.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有修改角色应用信息的权限。
+2. 必填参数：id、app_name 和 app_code 是必填参数。id必须是有效的角色应用ID，长度限制为1~19个字符。app_name和app_code也必须符合各自的格式要求。
+3. 请求格式：请求必须使用PATCH方法，并且id参数需要作为路径参数传递，其他参数需要放在请求体中。
+4. 数据校验：
+
+○
+app_name：长度限制为1~64个字符。
+○
+app_code：格式要求：只允许英文、数字、下划线的组合。
+○
+description：长度限制为1~128个字符，可选。
+○
+响应处理：如果请求失败，返回的error和error_description字段将包含错误信息，便于调试和问题定位。
+通过以上接口文档，您可以详细了解如何使用该接口来修改指定ID的角色应用信息，并进行相应的请求和响应处理。
+7.19
+获取用户的角色信息
+更新日期：2025-03-11
+7.19.1
+接口描述
+该接口用于获取指定用户的角色信息。
+7.19.2
+权限说明
+●
+需要具有查询用户角色信息的权限。
+●
+通过“获取access_token”接口获取的access_token需要在请求头中传递。
+7.19.3
+接口基本信息
+●
+请求方式：GET
+●
+请求地址：/iam/api/tags/getTagList/user
+7.19.4
+请求参数
+参数类型
+
+参数名
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Authorization
+
+Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+
+是
+
+通过“获取access_token”接口获取的access_token
+
+
+Query 参数
+
+username
+
+"admin"
+
+否
+
+用户名，用户名和用户id两项必须填一项，都填写以用户id为准，长度限制1~64个字符
+
+
+
+
+user_id
+
+"1234545"
+
+否
+
+用户ID，用户名和用户id两项必须填一项，都填写以用户id为准，长度限制1~19个字符
+7.19.5
+请求示例
+```http
+GET /iam/api/tags/getTagList/user?user_id=1234545 HTTP/1.1
+Host: example.com
+Authorization: Bearer ec2f0ada-6181-4105-82a1-dd87eb785542
+```
+7.19.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+result
+
+Boolean
+
+操作是否成功
+
+
+error
+
+String
+
+错误代码
+
+
+error_description
+
+String
+
+错误描述
+
+
+data
+
+Array
+
+用户的角色信息列表
+data 中的对象字段：
+字段名
+
+类型
+
+描述
+
+
+id
+
+String
+
+角色ID
+
+
+name
+
+String
+
+角色名称
+
+
+code
+
+String
+
+角色编码
+
+
+type
+
+Integer
+
+角色类型
+
+
+description
+
+String
+
+角色描述
+
+
+expression
+
+String
+
+角色表达式（JSON格式）
+
+
+app_id
+
+String
+
+应用ID
+
+
+app_name
+
+String
+
+应用名称
+
+
+app_code
+
+String
+
+应用编码
+
+
+group_is_default
+
+Integer
+
+是否为默认角色组（1表示是，默认为0）
+
+
+group_description
+
+String
+
+角色组描述
+7.19.7
+返回示例
+```json
+{
+    "result": true,
+    "error": "0",
+    "error_description": "SUCCESS",
+    "data": [
+        {
+            "id": "1825512235347238913",
+            "name": "vic_自动化测试_勿删",
+            "code": "vic_autotest_role1",
+            "type": 2,
+            "description": "使用中勿删",
+
+            "expression": "{\"black_list\":[ ],\"fields\":[ ],\"orgs\":[{\"child\":true,\"id\":\"1824296962489360386\"}]}",
+
+            "app_id": "1825512075649114114",
+            "app_name": "vic自动化测试_勿删",
+            "app_code": "vic_autotest",
+            "group_is_default": 1,
+            "group_description": "使用中，勿删除"
+        }
+    ]
+}
+```
+7.19.8
+注意事项
+1. 访问控制：确保请求中包含有效的access_token，并且该access_token具有查询用户角色信息的权限。
+2. 必填参数：username 和 user_id 两项必须填一项，都填写时以 user_id 为准。username 的长度限制为1~64个字符，user_id 的长度限制为1~19个字符。
+3. 请求格式：请求必须使用GET方法，并且username或user_id参数需要作为查询参数传递。
+4. 数据校验：
+
+○
+username：长度限制为1~64个字符。
+○
+user_id：长度限制为1~19个字符。
+○
+响应处理：如果请求失败，返回的error和error_description字段将
+
+8. 数据连接
+8.1
+Webhook启动连接流
+更新日期：2025-03-11
+8.1.1
+接口描述
+该接口用于第三方应用通过Webhook启动数据连接流，实现不同应用系统之间的数据流转。
+8.1.2
+权限说明
+●
+需要具有启动数据连接流的权限。
+●
+通过提供的apiKey进行身份验证。
+8.1.3
+接口基本信息
+●
+请求方式：POST
+●
+请求地址：/acm/flows/start/{actionId}/{flowId}/{apiKey}
+8.1.4
+请求参数
+参数类型
+
+参数名
+
+类型
+
+参数值(示例)
+
+必填
+
+备注
+
+
+Request Header
+
+Content-Type
+
+String
+
+application/json
+
+是
+
+请求的内容类型
+
+
+Path 参数
+
+actionId
+
+String
+
+1
+
+是
+
+动作ID
+
+
+
+
+flowId
+
+String
+
+1701181399261417474
+
+是
+
+数据连接流实例ID
+
+
+
+
+apiKey
+
+String
+
+9a217c61e46b461fb5e8766b4e5e01da
+
+是
+
+API Key
+
+
+Request Body
+
+data
+
+Json对象
+
+{"name":"user1","mobile":"13800138886"}
+
+否
+
+触发事件要传递的数据，可以是任意JSON格式的数据
+8.1.5
+请求示例
+```json
+POST /acm/flows/start/1/1701181399261417474/9a217c61e46b461fb5e8766b4e5e01da HTTP/1.1
+Host: example.com
+Content-Type: application/json
+
+{
+    "name": "user1",
+    "mobile": "13800138886"
+}
+```
+8.1.6
+返回参数
+参数名
+
+类型
+
+描述
+
+
+data
+
+Object
+
+连接流最后一个节点的输出数据（配置为同步时）
+
+
+error_code
+
+Integer
+
+错误代码
+
+
+flow_id
+
+String
+
+数据连接流实例ID
+
+
+message
+
+String
+
+操作结果描述
+
+
+task_id
+
+String
+
+任务ID
+8.1.7
+返回示例
+```json
+{
+    "data": null,    // Webhook可以配成同步和异步两种方式，配置同步时，data为连接流最后一个节点的输出数据
+    "error_code": 0,
+    "flow_id": 1735505081870151682,
+    "message": "推送成功",
+    "task_id": 1738789827758854145
+}
+```
+8.1.8
+注意事项
+1. 访问控制：确保请求中包含有效的apiKey，并且该apiKey具有启动数据连接流的权限。
+2. 必填参数：actionId、flowId 和 apiKey 是必填参数。actionId 表示动作ID，flowId 表示数据连接流实例ID，apiKey 用于身份验证。
+3. 请求格式：请求必须使用Post 方法，并且actionId、flowId 和 apiKey 需要作为路径参数传递。请求体中的data字段是可选的，可以传递任意JSON格式的数据。
+4. 响应处理：
+
+○
+data：当配置为同步时，data字段将包含连接流最后一个节点的输出数据；配置为异步时，data字段为null。
+○
+error_code：错误代码，0表示成功。
+○
+flow_id：数据连接流实例ID。
+○
+message：操作结果描述。
+○
+task_id：任务ID，用于跟踪任务状态。
+○
+同步与异步：Webhook可以配置为同步或异步两种方式。同步方式下，data字段将包含连接流的输出数据；异步方式下，data字段为null，可以通过task_id跟踪任务状态。
+
+9. 错误码
+错误码
+
+原文返回
+
+中文描述
+
+
+0
+
+SUCCESS
+
+成功
+
+
+1010000
+
+Server Unknown Error
+
+服务器未知错误
+
+
+1010001
+
+Internal server error
+
+内部服务器错误
+
+
+1010002
+
+Invalid Request Parameter
+
+无效请求参数
+
+
+1010003
+
+page size exceed allowed max value 500
+
+页面大小超出允许的最大值500
+
+
+1010004
+
+Request timeout! Please retry
+
+请求超时！请重试
+
+
+1010005
+
+Too Many Entries!
+
+条目过多！
+
+
+1010006
+
+Request is still processing. Please check later.
+
+请求仍在处理中，请稍后检查
+
+
+1010007
+
+User Center Not Initialized Yet
+
+用户中心尚未初始化
+
+
+1010008
+
+User Center Service is not ready. Please wait.
+
+用户中心服务尚未就绪，请等待
+
+
+1010009
+
+Specified tenant database schema create fail
+
+指定租户数据库模式创建失败
+
+
+1010010
+
+specified tenant or same tenant creation request already exists
+
+指定租户或相同的租户创建请求已存在
+
+
+1010011
+
+Specified tenant create error
+
+指定租户创建错误
+
+
+1010012
+
+tenant not found
+
+租户未找到
+
+
+1010013
+
+Deleting super tenant is not allowed
+
+禁止删除超级租户
+
+
+1010014
+
+tenant code is empty
+
+租户代码为空
+
+
+1010015
+
+cannot get lock for operation
+
+无法获取操作锁
+
+
+1010016
+
+tenant license config info error
+
+租户许可证配置信息错误
+
+
+1010017
+
+Tenant license has expired, please contact your dedicated service consultant
+
+平台授权已到期，请联系您的专属服务顾问获取帮助
+
+
+1010101
+
+Token invalid
+
+Token无效
+
+
+1010102
+
+Token expired
+
+Token已过期
+
+
+1010103
+
+Request token not found
+
+请求Token未找到
+
+
+1010104
+
+Request token expired
+
+请求Token已过期
+
+
+1010105
+
+Request token invalid
+
+请求Token无效
+
+
+1010106
+
+Token is conflict with parameters
+
+Token与参数冲突
+
+
+1010107
+
+authentication required
+
+需要认证
+
+
+1010108
+
+no permission
+
+无权限
+
+
+1010109
+
+no permission delete org
+
+无权限删除组织
+
+
+1010110
+
+no permission edit org
+
+无权限编辑组织
+
+
+1010111
+
+update password token invalid
+
+更新密码Token无效
+
+
+1010200
+
+username or password is not correct
+
+用户名或密码不正确
+
+
+1010201
+
+User Not Found
+
+用户未找到
+
+
+1010202
+
+User invalid
+
+用户无效
+
+
+1010203
+
+user with the same id already exists
+
+同ID的用户已存在
+
+
+1010204
+
+not allowed to operate on user attribute
+
+不允许操作用户属性
+
+
+1010205
+
+illegal user attribute for update
+
+非法的用户属性更新
+
+
+1010206
+
+user attribute is unknown
+
+用户属性未知
+
+
+1010207
+
+user attribute value is invalid
+
+用户属性值无效
+
+
+1010208
+
+user mandatory attribute value is missed
+
+用户必填属性值缺失
+
+
+1010209
+
+user email address not be verified
+
+用户电子邮件地址未验证
+
+
+1010210
+
+user email address is missed
+
+用户电子邮件地址缺失
+
+
+1010211
+
+user email address is verified already
+
+用户电子邮件地址已验证
+
+
+1010212
+
+Need to change password
+
+需要更改密码
+
+
+1010213
+
+User could not change password, password status invalid.
+
+用户无法更改密码，密码状态无效
+
+
+1010214
+
+invalid user status
+
+无效的用户状态
+
+
+1010215
+
+password is not correct
+
+密码不正确
+
+
+1010216
+
+the seconds in which the password is expired
+
+密码将在几秒后过期
+
+
+1010217
+
+need to change password after admin reset password
+
+管理员重置密码后需要更改密码
+
+
+1010218
+
+password is expired
+
+密码已过期
+
+
+1010219
+
+password is in history passwords
+
+密码在历史密码中
+
+
+1010220
+
+user account is locked
+
+用户账户被锁定
+
+
+1010221
+
+The administrator can not modify the user password
+
+管理员不能修改用户密码
+
+
+1010222
+
+The administrator cannot be changed with status
+
+管理员的状态不能被更改
+
+
+1010223
+
+The administrator cannot be changed with org
+
+管理员的组织不能被更改
+
+
+1010224
+
+mobile not verified
+
+手机未验证
+
+
+1010225
+
+mobile missing
+
+手机号码缺失
+
+
+1010226
+
+mobile already verified
+
+手机已验证
+
+
+1010227
+
+email missing, mobile missing or not verified
+
+电子邮件缺失，手机缺失或未验证
+
+
+1010228
+
+Cannot delete,move,change/reset password for read only user, read only user cannot join/leave org
+
+无法删除、移动、更改/重置只读用户的密码，只读用户不能加入/离开组织
+
+
+1010229
+
+SMS Gateway Unavailable
+
+短信网关不可用
+
+
+1010230
+
+Duplicated user:%s
+
+用户重复：%s
+
+
+1010231
+
+User not allowed to use this app
+
+用户不允许使用此应用
+
+
+1010232
+
+bad nonce in password
+
+密码中的nonce无效
+
+
+1010233
+
+bad user credentials in cookie
+
+Cookie中的用户凭证无效
+
+
+1010234
+
+login id is empty
+
+登录ID为空
+
+
+1010235
+
+wrong login id format
+
+登录ID格式错误
+
+
+1010236
+
+wrong OTP
+
+一次性密码错误
+
+
+1010237
+
+sending otp too frequently
+
+发送一次性密码过于频繁
+
+
+1010238
+
+duplicated user phone_number
+
+用户手机号已存在
+
+
+1010239
+
+duplicated user email address
+
+用户电子邮件地址已存在
+
+
+1010240
+
+synced user can't login with pwd because of no pwd
+
+同步用户无法使用密码登录，因为没有密码
+
+
+1010241
+
+outbound user not found
+
+外部用户未找到
+
+
+1010242
+
+inbound user not found
+
+内部用户未找到
+
+
+1010243
+
+third party user not found
+
+第三方用户未找到
+
+
+1010244
+
+username status is inactive
+
+用户名状态为不活跃
+
+
+1010245
+
+Multiple user
+
+多个用户
+
+
+1010246
+
+user is exist group chat
+
+用户已在群聊中
+
+
+1010247
+
+ding ding user not found
+
+钉钉用户未找到
+
+
+1010248
+
+username status is suspended
+
+用户名状态为暂停
+
+
+1010249
+
+username is locked
+
+用户名被锁定
+
+
+1010250
+
+user slider exception
+
+用户滑块异常
+
+
+1010251
+
+slider verify time out
+
+滑块验证超时
+
+
+1010252
+
+slider verify fail
+
+滑块验证失败
+
+
+1010253
+
+need slider verify
+
+需要滑块验证
+
+
+1010254
+
+user password does not meet the complexity requirements
+
+用户密码不符合复杂性要求
+
+
+1010255
+
+username status is overdue
+
+用户名状态为过期
+
+
+1010256
+
+User cannot change password until it is INACTIVE
+
+用户在未激活状态下不能更改密码
+
+
+1010257
+
+User cannot change password until it is OVERDUE
+
+用户在过期状态下不能更改密码
+
+
+1010258
+
+user order is invalid
+
+用户订单无效
+
+
+1010259
+
+The number of users exceeds the maximum allowed limit
+
+用户量超出最大许可数
+
+
+1010260
+
+duplicated user id_card
+
+用户身份证号已存在
+
+
+1010300
+
+Invalid Organization ID
+
+无效的组织ID
+
+
+1010301
+
+Organization Not Found
+
+组织未找到
+
+
+1010319
+
+Organization Not Found
+
+组织未找到
+
+
+1010302
+
+Organization with the same name already exists
+
+同名组织已存在
+
+
+1010303
+
+Cannot modify,delete,move root org, user cannot join/leave root org, cannot entitle app
+
+不能修改、删除或移动根组织，用户不能加入或离开根组织，不能授权应用
+
+
+1010304
+
+org has children, but cascade delete is false or not specified
+
+组织有子组织，但级联删除为假或未指定
+
+
+1010305
+
+Organization Already Has User
+
+组织已有用户
+
+
+1010306
+
+Organization Doesn't Have User
+
+组织没有用户
+
+
+1010307
+
+User Join Organzation Error
+
+用户加入组织错误
+
+
+1010308
+
+User Leave Organzation Error
+
+用户离开组织错误
+
+
+1010309
+
+parent org is equal to or a subordinate of the source org
+
+父组织等于或为源组织的子组织
+
+
+1010310
+
+cannot delete org, because it has users or children
+
+不能删除组织，因为它有用户或子组织
+
+
+1010311
+
+Cannot modify,delete,move default org, cannot create org under default org, user cannot join/leave default org
+
+不能修改、删除或移动默认组织，不能在默认组织下创建组织，用户不能加入或离开默认组织
+
+
+INVALID_REQUEST_PARAM_ERROR_CODE
+
+name: may not be empty
+
+名称不能为空
+
+
+INVALID_REQUEST_PARAM_ERROR_CODE
+
+org_id: org_id is equals parent_ref_id
+
+组织ID等于父组织ID
+
+
+INVALID_REQUEST_PARAM_ERROR_CODE
+
+org_id: may not be empty
+
+组织ID不能为空
+
+
+1010312
+
+organization name exceed max length：50
+
+组织名称超过最大长度 50 字符
+
+
+1010313
+
+organization desc exceed max length ：256
+
+组织描述超过最大长度 256 字符
+
+
+1010314
+
+Cannot modify,delete,move read only org, user cannot join/leave read only org. Cannot create org under read only org.
+
+不能修改、删除或移动只读组织，用户不能加入或离开只读组织，不能在只读组织下创建组织
+
+
+1010315
+
+Org attribute is unknown
+
+组织属性未知
+
+
+1010316
+
+Org attribute value is invalid
+
+组织属性值无效
+
+
+1010317
+
+Org order is invalid
+
+组织顺序无效
+
+
+1010318
+
+Only departments at the same level are allowed to sort
+
+只允许同一级别的部门进行排序
+
+
+1010319
+
+organization id exceed max length
+
+组织ID超过最大长度
+
+
+1010401
+
+User Schema Not Found
+
+用户模式未找到
+
+
+1010402
+
+Attribute already exists
+
+属性已存在
+
+
+1010403
+
+User schema object class is not exist
+
+用户模式对象类不存在
+
+
+1010404
+
+Attribute not exists
+
+属性不存在
+
+
+1010405
+
+Attribute data type is not support
+
+属性数据类型不支持
+
+
+1010406
+
+Attribute data is can not format, May contain special characters!
+
+属性数据无法格式化，可能包含特殊字符！
+
+
+1010407
+
+Max count of extended attributes is reached!
+
+扩展属性数量已达最大值
+
+
+1010408
+
+Basic User Attribute can not delete
+
+基本用户属性不能删除
+
+
+1010409
+
+Do not have permission to operate this org
+
+没有权限操作此组织
+
+
+1010501
+
+Does not support user registration by self
+
+不支持用户自助注册
+
+
+1010502
+
+Does not support self service
+
+不支持自助服务
+
+
+1010601
+
+Init once policy has been done
+
+初始化一次策略已完成
+
+
+1010602
+
+Same sync profile already exist.
+
+同步配置文件已存在
+
+
+1010603
+
+Same sync profile target already exist.
+
+同步配置目标已存在
+
+
+1010604
+
+Connection info wrong.
+
+连接信息错误
+
+
+1010605
+
+Init config has been done
+
+初始化配置已完成
+
+
+1010606
+
+Init config is required
+
+需要进行初始化配置
+
+
+1010607
+
+Connector related group exist
+
+连接器相关组已存在
+
+
+1010608
+
+Request sync profile not found.
+
+请求的同步配置文件未找到
+
+
+1010609
+
+Password policy: the value of pwdInHistory is not supported
+
+密码策略：pwdInHistory 的值不支持
+
+
+1010608
+
+mapAttrs: username could not be empty
+
+映射属性：用户名不能为空
+
+
+1010608
+
+mapAttrs: name could not be empty
+
+映射属性：名称不能为空
+
+
+1010610
+
+The current connector is locked
+
+当前连接器已锁定
+
+
+10107001
+
+Occur an error when sending email
+
+发送邮件时发生错误
+
+
+10107002
+
+Email template content error
+
+邮件模板内容错误
+
+
+1010801
+
+Template not found
+
+模板未找到
+
+
+1010900
+
+Import Sync User error
+
+导入同步用户错误
+
+
+1010901
+
+Import csv file content type error. Only application/vnd.ms-excel and text/csv permitted
+
+导入CSV文件内容类型错误。仅允许application/vnd.ms-excel和text/csv类型
+
+
+1010902
+
+Import csv file content could not be empty
+
+导入CSV文件内容不能为空
+
+
+1010903
+
+Import csv file size could not over %d
+
+导入CSV文件大小不能超过%d
+
+
+1010904
+
+Could not determine upload file charset.
+
+无法确定上传文件的字符集
+
+
+1010905
+
+An import task is processing
+
+一个导入任务正在处理中
+
+
+1010906
+
+An import task does not complete yet, please continue or cancel it.
+
+一个导入任务尚未完成，请继续或取消它
+
+
+1010907
+
+No task need to import
+
+没有需要导入的任务
+
+
+1010908
+
+No task need to cancel
+
+没有需要取消的任务
+
+
+1010909
+
+An import task is deleting.
+
+一个导入任务正在删除中
+
+
+1010910
+
+Read import csv file error.
+
+读取导入CSV文件时出错
+
+
+1010911
+
+CSV file header lack necessary column.
+
+CSV文件头缺少必要的列
+
+
+1010912
+
+Import users contains system built-in username
+
+导入用户包含系统内置用户名
+
+
+1010913
+
+Import csv file contains duplicate attributes: %s
+
+导入CSV文件包含重复属性：%s
+
+
+1010914
+
+Import csv file contains un supported attributes: %s
+
+导入CSV文件包含不支持的属性：%s
+
+
+1010915
+
+not allow to change username
+
+不允许更改用户名
+
+
+-
+
+Import occurred an except error. Please try again
+
+导入过程中发生异常错误。请重试
+
+
+1010920
+
+Connect refused
+
+连接被拒绝
+
+
+1010921
+
+attempt connect to server timeout
+
+尝试连接服务器超时
+
+
+1010922
+
+server handshake failure
+
+服务器握手失败
+
+
+1010923
+
+credential error
+
+凭证错误
+
+
+1010924
+
+Target baseDN not found
+
+目标baseDN未找到
+
+
+1010925
+
+No user found
+
+未找到用户
+
+
+1010926
+
+Datasource import profile parse error
+
+数据源导入配置解析错误
+
+
+1010927
+
+Could not search on target server
+
+无法在目标服务器上搜索
+
+
+1010928
+
+No group found
+
+未找到组
+
+
+1010930
+
+Import users content detail error.
+
+导入用户内容详细错误
+
+
+1010931
+
+Import csv file could not over %d items.
+
+导入CSV文件不能超过%d条目
+
+
+1010940
+
+An sync job is processing
+
+一个同步任务正在处理中
+
+
+1010941
+
+Could not change base dn for this profile
+
+无法为此配置更改base dn
+
+
+1010942
+
+Current sync profile is processing sync job
+
+当前同步配置正在处理同步任务
+
+
+1010943
+
+LDAP Server Not AD
+
+LDAP服务器不是AD
+
+
+1010944
+
+Could not change username format after synced once
+
+同步后无法更改用户名格式
+
+
+1010945
+
+Could not change username format after synced once
+
+同步后无法更改用户名格式
+
+
+1010946
+
+Could not change import_orgs flag after synced once
+
+同步后无法更改import_orgs标志
+
+
+1010947
+
+connector id invalid error
+
+连接器ID无效错误
+
+
+1010948
+
+connector handle invalid error
+
+连接器句柄无效错误
+
+
+1010949
+
+connector handle invalid error
+
+连接器句柄无效错误
+
+
+1010950
+
+connector not found
+
+连接器未找到
+
+
+1010951
+
+more than one connectors found
+
+找到多个连接器
+
+
+1010952
+
+sync job is failed
+
+同步任务失败
+
+
+1010953
+
+import file invalid
+
+导入文件无效
+
+
+1010954
+
+current sql is error
+
+当前SQL语句有误
+
+
+1010955
+
+Aliases in SQL statements exist in Chinese
+
+SQL语句中的别名存在中文
+
+
+1010956
+
+The current SQL statement is not a query statement
+
+当前SQL语句不是查询语句
+
+
+1010957
+
+The current connector has synchronized with the primary key and cannot be changed
+
+当前连接器已与主键同步，无法更改
+
+
+1010958
+
+The current connector has synchronized with the primary key and cannot be changed
+
+当前连接器已与主键同步，无法更改
+
+
+1010959
+
+The ref org of current connector can not be delete
+
+当前连接器的引用组织不能被删除
+
+
+1011001
+
+Client not found
+
+客户端未找到
+
+
+1011002
+
+No approved record
+
+无批准记录
+
+
+1011101
+
+Application type invalid
+
+应用类型无效
+
+
+1011102
+
+Fail to generate key pair
+
+生成密钥对失败
+
+
+1011103
+
+Application already exists
+
+应用已存在
+
+
+1011104
+
+One or more redirect_uri values are invalid
+
+一个或多个重定向URI值无效
+
+
+1011105
+
+Application not found
+
+应用未找到
+
+
+1011106
+
+Application has no secret
+
+应用没有密钥
+
+
+1011107
+
+Public key format error
+
+公钥格式错误
+
+
+1011109
+
+Application type unknown
+
+应用类型未知
+
+
+1011110
+
+Application status unknown
+
+应用状态未知
+
+
+1011111
+
+Refresh token should be equal or greater than 3600 (one day) and equal or less than 3600 * 24 * 30 (2592000 seconds, one month), value 0 means refresh token never expire
+
+刷新令牌应大于等于3600秒（一天）且小于等于2592000秒（一个月），值为0表示刷新令牌永不过期
+
+
+1011112
+
+There is at least one client that could NOT be trusted peer
+
+至少有一个客户端不能作为可信对等体
+
+
+1011113
+
+No public key for this application
+
+该应用没有公钥
+
+
+1011114
+
+Specified validation factor error
+
+指定的验证因素错误
+
+
+1011115
+
+CLI client type not allowed
+
+不允许CLI客户端类型
+
+
+1011116
+
+Revoke failed, user/org not entitled to client before
+
+撤销失败，用户/组织之前未授权该客户端
+
+
+1011117
+
+Application is internal, CRUD not allowed
+
+应用是内部应用，不允许进行CRUD操作
+
+
+1011118
+
+CLI app can NOT be delegated to authorize
+
+CLI应用不能被委托授权
+
+
+1011119
+
+Application auth approved id does not exist
+
+应用认证批准ID不存在
+
+
+1011120
+
+Invalid client
+
+无效的客户端
+
+
+1011121
+
+Not allow password-less
+
+不允许无密码登录
+
+
+1011122
+
+App not enabled.
+
+应用未启用
+
+
+1011123
+
+Profile reference unknown
+
+配置文件引用未知
+
+
+1011124
+
+The third App does not trust the request App
+
+第三方应用不信任请求应用
+
+
+1011125
+
+Tenant owner can NOT be empty
+
+租户所有者不能为空
+
+
+1011126
+
+Tenant id not found
+
+租户ID未找到
+
+
+1011127
+
+Scanners can NOT be empty
+
+扫描器不能为空
+
+
+1011128
+
+User not allow to use the app
+
+用户不允许使用该应用
+
+
+1011129
+
+App not allow using sms.
+
+应用不允许使用短信
+
+
+1011130
+
+App not allow using email.
+
+应用不允许使用电子邮件
+
+
+1011131
+
+APP Bad Signing Algorithm
+
+应用签名算法错误
+
+
+1011132
+
+Application auth protocol invalid
+
+应用认证协议无效
+
+
+1011133
+
+Cannot update read only application
+
+无法更新只读应用
+
+
+1011134
+
+The username already exists
+
+用户名已存在
+
+
+1011135
+
+The user credential not found
+
+未找到用户凭证
+
+
+1011136
+
+The user credential error
+
+用户凭证错误
+
+
+1011201
+
+Permission already exists
+
+权限已存在
+
+
+1011202
+
+Permission not found
+
+权限未找到
+
+
+1011203
+
+Role already exists
+
+角色已存在
+
+
+1011204
+
+Role not found
+
+角色未找到
+
+
+1011205
+
+Action not supported
+
+操作不支持
+
+
+1011206
+
+Permission Set already exists
+
+权限集已存在
+
+
+1011207
+
+Permission Set not found
+
+权限集未找到
+
+
+1011208
+
+Role Binding with same username, client_id and role_name already exists
+
+具有相同用户名、客户端ID和角色名的角色绑定已存在
+
+
+1011209
+
+Role Binding not found
+
+角色绑定未找到
+
+
+1011210
+
+Tag already exists
+
+标签已存在
+
+
+1011211
+
+Tag not found
+
+标签未找到
+
+
+1011212
+
+Not allowed to self-revoke role
+
+不允许自我撤销角色
+
+
+1011213
+
+Create tag and add user fail!
+
+创建标签并添加用户失败
+
+
+1011214
+
+Role group not found!
+
+角色组未找到
+
+
+1011215
+
+Role group size should less than 255!
+
+角色组大小应小于255
+
+
+1011216
+
+cannot delete role group, because it has children
+
+无法删除角色组，因为它有子角色
+
+
+1011217
+
+cannot delete default role group
+
+无法删除默认角色组
+
+
+1011218
+
+Role group code already exists
+
+角色组代码已存在
+
+
+1011219
+
+Role group name already exists
+
+角色组名称已存在
+
+
+1011220
+
+Role name already exists
+
+角色名称已存在
+
+
+1011221
+
+Role group or the role does not exist
+
+角色组或角色不存在
+
+
+1011222
+
+Role code already exists
+
+角色代码已存在
+
+
+1011223
+
+Multiple identical groups found
+
+找到多个相同的组
+
+
+1011224
+
+current roleGroup has other role
+
+当前角色组包含其他角色
+
+
+1011225
+
+Role Binding with same user and role_name not found
+
+未找到具有相同用户和角色名的角色绑定
+
+
+1011300
+
+Could not parse Certification Content
+
+无法解析证书内容
+
+
+1011301
+
+Duplicated certification id
+
+重复的证书ID
+
+
+1011302
+
+Reach user certification maximum limitation.
+
+达到用户证书的最大限制
+
+
+1011303
+
+Error active code response type
+
+激活码响应类型错误
+
+
+1011304
+
+Certification not found
+
+证书未找到
+
+
+1011305
+
+Username not consistent
+
+用户名不一致
+
+
+1011306
+
+DeviceId not consistent
+
+设备ID不一致
+
+
+1011307
+
+invalid ticket
+
+无效的票据
+
+
+1011400
+
+Password less connector error. Value should be SMS or EMAIL.
+
+无密码连接器错误。值应为SMS或EMAIL。
+
+
+1011500
+
+Profile not found
+
+用户配置文件未找到
+
+
+1011501
+
+Domains in profile could not be empty
+
+用户配置文件中的域不能为空
+
+
+1011502
+
+Reader unknown
+
+未知读取者
+
+
+1011503
+
+Domain name unknown
+
+域名未知
+
+
+1011504
+
+Profile is internal and could not be deleted
+
+配置文件是内部的，不能被删除
+
+
+1011505
+
+Profile Id exists
+
+配置文件ID已存在
+
+
+1011506
+
+Domain name could not be empty
+
+域名不能为空
+
+
+1011507
+
+Writers could not be everyone
+
+写入者不能是所有人
+
+
+1011508
+
+Readers could not be empty
+
+读取者不能为空
+
+
+1011509
+
+Writers could not be empty
+
+写入者不能为空
+
+
+1011510
+
+Writer unknown
+
+未知写入者
+
+
+1011511
+
+Attribute is not as profile
+
+属性不是作为配置文件
+
+
+1011512
+
+Attribute is not as claim
+
+属性不是作为声明
+
+
+1011513
+
+Profile is in use
+
+配置文件正在使用中
+
+
+1011514
+
+Builtin profile can NOT be modified
+
+内置配置文件不能被修改
+
+
+1011515
+
+User profile total size reach max count
+
+用户配置文件总数达到最大数量
+
+
+1011516
+
+User profile name duplicated
+
+用户配置文件名称重复
+
+
+1011601
+
+login policy name can't be empty
+
+登录策略名称不能为空
+
+
+1011602
+
+login policy already exists
+
+登录策略已存在
+
+
+1011603
+
+login policy not found
+
+登录策略未找到
+
+
+1011604
+
+pwd auth method not allowed in mfa settings
+
+密码认证方法在多因素认证设置中不允许
+
+
+1011605
+
+not allowed to delete default login policy or update its status
+
+不允许删除默认登录策略或更新其状态
+
+
+1011606
+
+primary auth method required
+
+需要主要认证方法
+
+
+1011607
+
+inactive login policy can't set as default login policy
+
+非活动登录策略不能设置为默认登录策略
+
+
+1011608
+
+login policy not applicable to CLI app
+
+登录策略不适用于CLI应用
+
+
+1011609
+
+login policy has CERT auth method, but client is not NATIVE type
+
+登录策略有证书认证方法，但客户端不是原生类型
+
+
+1011610
+
+login policy primary auth pwd_enabled must be true
+
+登录策略的主要认证密码启用必须为真
+
+
+1011801
+
+auth factor not found
+
+认证因素未找到
+
+
+1011701
+
+auth factor doesn't exist
+
+认证因素不存在
+
+
+1011702
+
+auth need mfa
+
+认证需要多因素认证
+
+
+1111101
+
+Unauthorized request
+
+未授权请求
+
+
+1111102
+
+Insufficient privileges
+
+权限不足
+
+
+1111103
+
+Could not request others resource
+
+不能请求他人的资源
+
+
+1111104
+
+username attribute is required for sign up
+
+注册时需要用户名属性
+
+
+1111105
+
+password attribute is required for sign up
+
+注册时需要密码属性
+
+
+1111106
+
+cookie validity can't be 0 or less than -1
+
+Cookie有效期不能为0或小于-1
+
+
+1111107
+
+user certification count can't be 0 or less than -1 and over 10
+
+用户证书数量不能为0、小于-1或超过10
+
+
+1111108
+
+user certification validity period can't be less than 0
+
+用户证书有效期不能小于0
+
+
+1111109
+
+message verify validity greater 10 or less than 0
+
+消息验证有效期不能大于10或小于0
+
+
+1111110
+
+email verify validity greater 10 or less than 0
+
+邮件验证有效期不能大于10或小于0
+
+
+10102100
+
+the input tcode is not match with system token
+
+输入的tcode与系统令牌不匹配
+
+
+12000100
+
+dingtalk response null
+
+钉钉响应为空
+
+
+12000101
+
+dingtalk response error
+
+钉钉响应错误
+
+
+12000102
+
+The parameter name in the URL is inconsistent with it in the request
+
+URL中的参数名称与请求中的不一致
+
+
+12000103
+
+dingtalk response fail
+
+钉钉响应失败
+
+
+12000104
+
+the auth data is used for app,please delete the app auth data first
+
+认证数据已被应用使用，请先删除应用认证数据
+
+
+13000100
+
+get wework accessToken error
+
+获取企业微信accessToken错误
+
+
+13000101
+
+get wework accesstoken lock error
+
+获取企业微信accesstoken锁错误
+
+
+14000001
+
+No Third Party SSO Auth Provider
+
+没有第三方SSO认证提供者
+
+
+14000002
+
+required auth provider not found
+
+所需的认证提供者未找到
+
+
+14000003
+
+Sns auth failed
+
+SNS认证失败
+
+
+14000004
+
+Sns code is blank
+
+SNS代码为空
+
+
+13000200
+
+push connector name duplicate
+
+推送连接器名称重复
+
+
+13000201
+
+push connector tenant key exsits, the corpId exist or ad/ldap's basdn exist
+
+推送连接器租户键已存在，corpId已存在或ad/ldap的basdn已存在
+
+
+13000202
+
+push connector invalid
+
+推送连接器无效
+
+
+13000203
+
+push connector id invalid
+
+推送连接器ID无效
+
+
+13000204
+
+push data to connector create group error
+
+推送数据到连接器创建组时出错
+
+
+13000205
+
+push data to connector create user error
+
+推送数据到连接器创建用户时出错
+
+
+13000206
+
+push data to connector modify group error
+
+推送数据到连接器修改组时出错
+
+
+13000207
+
+push data to connector modify user error
+
+推送数据到连接器修改用户时出错
+
+
+13000208
+
+push connector config invalid
+
+推送连接器配置无效
+
+
+13000209
+
+exist same type connector
+
+存在相同类型的连接器
+
+
+13000210
+
+please disable the connector before deleting it
+
+请在删除连接器前禁用它
+
+
+13000211
+
+push connector is running
+
+推送连接器正在运行
+
+
+13000212
+
+Push connector did not trigger delete limit
+
+推送连接器未触发删除限制
+
+
+13000213
+
+The ref org of current push connector can not be delete
+
+当前推送连接器的引用组织不能被删除
+
+
+13000300
+
+sns config corpid duplicate
+
+SNS配置corpID重复
+
+
+13000301
+
+sns config name duplicate
+
+SNS配置名称重复
+
+
+13000302
+
+sns config id invalid
+
+SNS配置ID无效
+
+
+13000303
+
+sns config invalid
+
+SNS配置无效
+
+
+13000304
+
+sns config type invalid
+
+SNS配置类型无效
+
+
+13000305
+
+sns config is used invalid
+
+SNS配置正在使用，无法操作
+
+
+13000306
+
+push connector used same sns config
+
+推送连接器使用了相同的SNS配置
+
+
+13000307
+
+sync connector used same sns config
+
+同步连接器使用了相同的SNS配置
+
+
+13000308
+
+third idp config id invalid
+
+第三方IDP配置ID无效
+
+
+13000309
+
+The ref org of current third idp can not be delete
+
+当前第三方IDP的引用组织不能被删除
+
+
+13000400
+
+push record invalid
+
+推送记录无效
+
+
+13000401
+
+push record id is invalid
+
+推送记录ID无效
+
+
+13000402
+
+push record businessDataRefId is invalid
+
+推送记录业务数据引用ID无效
+
+
+13000403
+
+push record business type is invalid
+
+推送记录业务类型无效
+
+
+13000500
+
+thirdparty app not found
+
+第三方应用未找到
+
+
+13111001
+
+get ding ding access token error
+
+获取钉钉访问令牌时出错
+
+
+13111002
+
+get ding ding apps error
+
+获取钉钉应用时出错
+
+
+14000000
+
+data flow common error
+
+数据流通用错误
+
+
+14111001
+
+exist actions or trigger
+
+存在动作或触发器
+
+
+15000000
+
+proxy client is null
+
+代理客户端为空
+
+
+15000001
+
+proxy group is null
+
+代理组为空
+
+
+15000002
+
+proxy group size should less than 255
+
+代理组大小应小于255
+
+
+15000003
+
+proxy group is exist
+
+代理组已存在
+
+
+15000004
+
+proxy client is exist
+
+代理客户端已存在
+
+
+16000212
+
+WeChat is not linked to the user account
+
+用户未绑定微信
+
+
+16000213
+
+Username already exists
+
+用户名已存在
+
+
+16000214
+
+User registration pending approval
+
+用户注册审核中
+
+
+16000215
+
+The administrator rejected the user registration request. Please contact your administrator
+
+管理员拒绝了用户注册申请，请联系你的管理员
+
+
+16000216
+
+Bind WeChat successfully
+
+绑定微信成功
+
+
+16000217
+
+The account is already bound to another WeChat
+
+该账号已经绑定其他微信
+
+
+16000218
+
+This WeChat is already bound to another account
+
+该微信已经绑定其他账户号
+
+
+16000219
+
+The admin account cannot be linked to WeChat
+
+admin账号不能绑定微信
+
+
+error
+
+error
+
+错误
+
+
+error_description
+
+error_description
+
+错误描述
+
+
+indicate
+
+indicate
+
+指示
+
+
+invalid_request
+
+invalid_request
+
+无效请求
+
+
+client_already_exists
+
+client_already_exists
+
+客户端已存在
+
+
+invalid_client_profile
+
+invalid_client_profile
+
+无效的客户端配置文件
+
+
+invalid_redirect_uri
+
+invalid_redirect_uri
+
+无效的重定向URI
+
+
+invalid_client
+
+invalid_client
+
+无效的客户端
+
+
+invalid_user_profile
+
+invalid_user_profile
+
+无效的用户配置文件
+
+
+server_error
+
+server_error
+
+服务器错误
+
+大纲
+集成平台API开放文档
+1. API规范
+1.1 响应格式
+1.2 安全认证
+2. 安全认证
+2.1 获取 access_token
+2.1.1 权限说明
+2.1.2 接口基本信息
+2.1.3 请求参数
+2.1.4 请求示例
+2.1.5 返回参数
+2.1.6 返回示例
+2.1.7 注意事项
+2.2 M2M 应用数据访问权限
+2.2.1 M2M 组织架构数据范围设置
+2.2.2 组织架构数据范围的含义
+2.2.3 字段级访问控制
+2.2.3.1 资源类型
+2.2.3.2 控制机制
+2.2.4 如何配置 M2M 组织架构数据范围和字段级访问控制
+3. 组织部门API
+3.1 获取组/部门的列表
+3.1.1 接口描述
+3.1.2 权限说明
+3.1.3 接口基本信息
+3.1.4 请求参数
+3.1.5 请求示例
+3.1.6 返回参数
+3.1.7 返回示例
+3.1.8 注意事项
+3.2 根据组/部门ID获取下级组/部门信息
+3.2.1 接口描述
+3.2.2 权限说明
+3.2.3 基本信息
+3.2.4 请求参数
+3.2.5 请求示例
+3.2.6 返回参数
+3.2.7 返回示例
+3.2.8 注意事项
+3.2.9 示例场景
+3.3 根据组/部门ID获取组/部门的信息
+3.3.1 接口描述
+3.3.2 权限说明
+3.3.3 基本信息
+3.3.4 请求参数
+3.3.5 请求示例
+3.3.6 返回参数
+3.3.7 返回示例
+3.3.8 注意事项
+3.4 创建组/部门
+3.4.1 接口描述
+3.4.2 权限说明
+3.4.3 基本信息
+3.4.4 请求参数
+3.4.5 请求示例
+3.4.6 返回参数
+3.4.7 返回示例
+3.4.8 注意事项
+3.5 修改组/部门
+3.5.1 接口描述
+3.5.2 权限说明
+3.5.3 基本信息
+3.5.4 请求参数
+3.5.5 请求示例
+3.5.6 返回参数
+3.5.7 返回示例
+3.5.8 注意事项
+3.6 删除组/部门
+3.6.1 接口描述
+3.6.2 权限说明
+3.6.3 接口基本信息
+3.6.4 请求参数
+3.6.5 请求示例
+3.6.6 响应参数
+3.6.7 响应示例
+3.6.8 注意事项
+3.7 过滤部门信息
+3.7.1 接口描述
+3.7.2 权限说明
+3.7.3 接口基本信息
+3.7.4 请求参数
+3.7.5 请求示例
+3.7.6 响应参数
+3.7.7 响应示例
+3.7.8 注意事项
+4. 用户API
+4.1 查询用户
+4.1.1 接口描述
+4.1.2 权限说明
+4.1.3 接口基本信息
+4.1.4 请求参数
+4.1.5 请求示例
+4.1.6 返回参数
+4.1.7 返回示例
+4.1.8 注意事项
+4.1.9 根据多个条件过滤并查询用户信息
+4.1.9.1 接口描述
+4.1.9.2 权限说明
+4.1.9.3 接口基本信息
+4.1.9.4 请求参数
+4.1.9.5 Body 参数
+4.1.9.6 请求示例
+4.1.9.7 返回参数
+4.1.9.8 返回示例
+4.1.9.9 注意事项
+4.2 根据用户帐号获取用户信息
+4.2.1 接口描述
+4.2.2 权限说明
+4.2.3 接口基本信息
+4.2.4 请求参数
+4.2.5 请求示例
+4.2.6 返回参数
+4.2.7 返回示例
+4.2.8 注意事项
+4.3 创建用户
+4.3.1 接口描述
+4.3.2 权限说明
+4.3.3 接口基本信息
+4.3.4 请求参数
+4.3.5 请求示例
+4.3.6 返回参数
+4.3.7 返回示例
+4.3.8 注意事项
+4.4 修改用户
+4.4.1 接口描述
+4.4.2 权限说明
+4.4.3 接口基本信息
+4.4.4 请求参数
+4.4.5 请求示例
+4.4.6 返回参数
+4.4.7 返回示例
+4.4.8 注意事项
+4.5 启用/禁用用户
+4.5.1 接口描述
+4.5.2 权限说明
+4.5.3 接口基本信息
+4.5.4 请求参数
+4.5.5 请求示例
+4.5.6 返回参数
+4.5.7 返回示例
+4.5.8 注意事项
+4.6 删除用户
+4.6.1 接口描述
+4.6.2 权限说明
+4.6.3 接口基本信息
+4.6.4 请求参数
+4.6.5 请求示例
+4.6.6 返回参数
+4.6.7 返回示例
+4.6.8 注意事项
+4.7 修改用户密码
+4.7.1 接口描述
+4.7.2 权限说明
+4.7.3 接口基本信息
+4.7.4 请求参数
+4.7.5 请求示例
+4.7.6 返回参数
+4.7.7 返回示例
+4.7.8 注意事项
+5. 通讯录集成连接器事件通知
+5.1 集成连接器事件通知
+5.1.1 接口描述
+5.1.2 权限说明
+5.1.3 接口基本信息
+5.1.4 请求参数
+5.1.5 请求示例
+5.1.6 返回参数
+5.1.7 返回示例
+5.1.8 注意事项
+6. 通讯录同步连接器事件通知
+6.1 同步连接器事件通知
+6.1.1 场景描述
+6.1.2 方式一：内置同步连接器事件通知
+6.1.3 方式二：身份下游自动化事件通知
+7. 角色管理
+7.1 创建角色
+7.1.1 接口描述
+7.1.2 权限说明
+7.1.3 基本信息
+7.1.4 请求参数
+7.1.5 请求示例
+7.1.6 返回参数
+7.1.7 返回示例
+7.1.8 注意事项
+7.2 修改角色
+7.2.1 接口描述
+7.2.2 权限说明
+7.2.3 基本信息
+7.2.4 请求参数
+7.2.5 请求示例
+7.2.6 返回参数
+7.2.7 返回示例
+7.2.8 注意事项
+7.3 删除角色
+7.3.1 接口描述
+7.3.2 权限说明
+7.3.3 基本信息
+7.3.4 请求参数
+7.3.5 请求示例
+7.3.6 返回参数
+7.3.7 返回示例
+7.3.8 注意事项
+7.4 查询角色列表
+7.4.1 接口描述
+7.4.2 权限说明
+7.4.3 基本信息
+7.4.4 请求参数
+7.4.5 请求示例
+7.4.6 返回参数
+7.4.7 返回示例
+7.4.8 注意事项
+7.5 获取单个角色详情
+7.5.1 接口描述
+7.5.2 权限说明
+7.5.3 基本信息
+7.5.4 请求参数
+7.5.5 请求示例
+7.5.6 返回参数
+7.5.7 返回示例
+7.5.8 注意事项
+7.6 根据应用ID和用户ID获取角色列表
+7.6.1 接口描述
+7.6.2 权限说明
+7.6.3 基本信息
+7.6.4 请求参数
+7.6.5 请求示例
+7.6.6 返回参数
+7.6.7 返回示例
+7.6.8 注意事项
+7.7 查看角色所对应的用户列表
+7.7.1 接口描述
+7.7.2 权限说明
+7.7.3 接口基本信息
+7.7.4 请求参数
+7.7.5 请求示例
+7.7.6 返回参数
+7.7.7 返回示例
+7.7.8 注意事项
+7.8 给多个用户添加静态角色
+7.8.1 接口描述
+7.8.2 权限说明
+7.8.3 接口基本信息
+7.8.4 请求参数
+7.8.5 请求示例
+7.8.6 返回参数
+7.8.7 返回示例
+7.8.8 注意事项
+7.9 删除用户静态角色
+7.9.1 接口描述
+7.9.2 权限说明
+7.9.3 接口基本信息
+7.9.4 请求参数
+7.9.5 请求示例
+7.9.6 返回参数
+7.9.7 返回示例
+7.9.8 注意事项
+7.10 用户信息加密
+7.10.1 接口描述
+7.10.2 权限说明
+7.10.3 接口基本信息
+7.10.4 请求参数
+7.10.5 请求示例
+7.10.6 返回参数
+7.10.7 返回示例
+7.10.8 注意事项
+7.11 创建角色应用
+7.11.1 接口描述
+7.11.2 权限说明
+7.11.3 接口基本信息
+7.11.4 请求参数
+7.11.5 请求示例
+7.11.6 返回参数
+7.11.7 返回示例
+7.11.8 注意事项
+7.12 删除角色应用
+7.12.1 接口描述
+7.12.2 权限说明
+7.12.3 接口基本信息
+7.12.4 请求参数
+7.12.5 请求示例
+7.12.6 返回参数
+7.12.7 返回示例
+7.12.8 注意事项
+7.13 修改角色应用
+7.13.1 接口描述
+7.13.2 权限说明
+7.13.3 接口基本信息
+7.13.4 请求参数
+7.13.5 请求示例
+7.13.6 返回参数
+7.13.7 返回示例
+7.13.8 注意事项
+7.14 获取角色应用
+7.14.1 接口描述
+7.14.2 权限说明
+7.14.3 接口基本信息
+7.14.4 请求参数
+7.14.5 请求示例
+7.14.6 返回参数
+7.14.7 返回示例
+7.14.8 注意事项
+7.15 获取应用对应的角色列表
+7.15.1 接口描述
+7.15.2 权限说明
+7.15.3 接口基本信息
+7.15.4 请求参数
+7.15.5 请求示例
+7.15.6 返回参数
+7.15.7 返回示例
+7.15.8 注意事项
+7.16 根据应用ID获取角色应用详情
+7.16.1 接口描述
+7.16.2 权限说明
+7.16.3 接口基本信息
+7.16.4 请求参数
+7.16.5 请求示例
+7.16.6 返回参数
+7.16.7 返回示例
+7.16.8 注意事项
+7.17 根据角色应用编码获取角色应用详情
+7.17.1 接口描述
+7.17.2 权限说明
+7.17.3 接口基本信息
+7.17.4 请求参数
+7.17.5 请求示例
+7.17.6 返回参数
+7.17.7 返回示例
+7.17.8 注意事项
+7.18 修改角色应用信息
+7.18.1 接口描述
+7.18.2 权限说明
+7.18.3 接口基本信息
+7.18.4 请求参数
+7.18.5 请求示例
+7.18.6 返回参数
+7.18.7 返回示例
+7.18.8 注意事项
+7.19 获取用户的角色信息
+7.19.1 接口描述
+7.19.2 权限说明
+7.19.3 接口基本信息
+7.19.4 请求参数
+7.19.5 请求示例
+7.19.6 返回参数
+7.19.7 返回示例
+7.19.8 注意事项
+8. 数据连接
+8.1 Webhook启动连接流
+8.1.1 接口描述
+8.1.2 权限说明
+8.1.3 接口基本信息
+8.1.4 请求参数
+8.1.5 请求示例
+8.1.6 返回参数
+8.1.7 返回示例
+8.1.8 注意事项
+9. 错误码

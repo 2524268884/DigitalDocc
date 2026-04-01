@@ -1,0 +1,128 @@
+---
+title: "API 开放文档"
+description: "数犀集成平台 API 文档概览，包含认证方式和主要 API 分类"
+---
+
+本文档为数犀集成平台 API 的概览页面，提供快速导航和核心概念说明。
+
+---
+
+- 在线 API 调试
+
+推荐使用 Apifox 进行在线 API 调试：
+
+**API 调试地址**: [https://uj0cyahyvs.apifox.cn/](https://uj0cyahyvs.apifox.cn/)
+
+Apifox 提供：
+- 可视化 API 请求构建
+- 自动生成代码示例
+- 环境变量管理
+- 团队协作支持
+
+---
+
+## API 分类概览
+
+数犀集成平台 API 分为以下模块：
+
+| 模块 | 说明 | 文档 |
+|------|------|------|
+| **认证 API** | 获取 access_token、M2M 认证 | [安全认证](../集成平台API开放文档.mdx#认证) |
+| **组织架构 API** | 部门、用户组管理 | [组织部门API](../集成平台API开放文档.mdx#组织部门api) |
+| **用户管理 API** | 用户 CRUD、属性管理 | [用户管理API](../集成平台API开放文档.mdx#用户管理api) |
+| **角色权限 API** | 角色创建、权限分配 | [角色权限API](../集成平台API开放文档.mdx#角色权限api) |
+| **认证源 API** | 外部身份源配置 | [认证源API](../集成平台API开放文档.mdx#认证源api) |
+| **应用 API** | 应用创建、授权管理 | [应用API](../集成平台API开放文档.mdx#应用api) |
+| **同步任务 API** | 通讯录同步管理 | [同步任务API](../集成平台API开放文档.mdx#同步任务api) |
+| **消息推送 API** | 企业消息、待办通知 | [消息推送API](../集成平台API开放文档.mdx#消息推送api) |
+
+---
+
+## 快速开始
+
+### 第一步：获取 Access Token
+
+所有 API 调用都需要先获取 access_token：
+
+```bash
+curl -X POST 'https://{your-tenant}.idaas.example.com/iam/token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Authorization: Basic base64({client_id}:{client_secret})' \
+  -d 'grant_type=client_credentials'
+```
+
+响应示例：
+
+```json
+{
+  "access_token": "48709172-514c-40df-9f40-2ee97245b642",
+  "token_type": "bearer",
+  "expires_in": 599,
+  "scope": "address phone openid profile offline_access email"
+}
+```
+
+### 第二步：调用 API
+
+获取 token 后，在请求头中携带：
+
+```bash
+curl -X GET 'https://{your-tenant}.idaas.example.com/api/v1/users' \
+  -H 'Authorization: Bearer {access_token}'
+```
+
+### 第三步：处理响应
+
+API 统一响应格式：
+
+```json
+{
+  "result": true,
+  "error": "0",
+  "error_description": "SUCCESS",
+  "data": {
+    // 业务数据
+  }
+}
+```
+
+---
+
+## 认证方式
+
+| 方式 | 适用场景 | 说明 |
+|------|----------|------|
+| **Basic Auth** | 服务端调用 | 使用 client_id:client_secret 编码后传输 |
+| **Bearer Token** | API 调用 | 使用获取的 access_token |
+| **M2M** | 机器对机器 | 应用级别的数据访问权限控制 |
+
+### M2M 权限说明
+
+M2M 应用除了 API 操作权限外，还受到**组织架构数据范围**限制：
+
+- 只能访问授权范围内的部门/用户数据
+- 支持「允许」和「拒绝」规则
+- 支持字段级访问控制（V5.8.1+）
+
+详细配置：[M2M 应用数据访问权限](../集成平台API开放文档.mdx#m2m-应用数据访问权限)
+
+---
+
+## 常见问题
+
+**Q: token 过期了怎么办？**
+A: 重新调用获取 token 接口。建议在本地缓存 token，过期前主动刷新。
+
+**Q: API 返回权限不足？**
+A: 检查：1) token 是否有效；2) M2M 应用是否配置了对应数据范围；3) 字段级权限是否配置。
+
+**Q: 如何查看 API 调用日志？**
+A: 进入「审计日志 > 接口日志」，可查看所有 API 调用记录。
+
+---
+
+## 相关文档
+
+- [集成平台API开放文档（完整版）](./集成平台API开放文档.mdx) - 包含所有 API 的详细说明
+- [M2M 接口权限配置](../应用中心/M2M接口授权/接口调用权限配置说明.mdx)
+- [应用授权管理](../应用中心/应用授权管理.mdx)

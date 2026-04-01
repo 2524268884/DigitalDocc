@@ -1,0 +1,260 @@
+---
+title: "文本处理节点"
+---
+
+## 概述
+高级文本处理节点，支持15种不同的文本操作类型，包括文本分割、格式转换、数据提取、验证等功能。通过丰富的文本处理能力，可以实现复杂的数据清洗、格式转换和内容处理需求。
+功能特性
+- 15种处理类型：涵盖文本分割、格式转换、数据提取、验证等全方位功能
+- 灵活参数配置：支持自定义分隔符、公式变量、正则表达式等
+- 多格式支持：支持HTML、Markdown、JSON、CSV等多种格式转换
+- 智能提取：自动提取数字、URL、关键词等结构化信息
+- 数据验证：内置邮箱、手机号、身份证等格式验证
+- 公式计算：支持基本数学运算和变量替换
+支持的操作类型
+1. TEXT_SPLIT - 文本分割
+将文本按指定分隔符分割成多个部分。
+参数：
+- inputText：待分割的文本
+- fixedSeparator：固定分隔符（space/tab/newline/backslash）
+- customSeparator：自定义分隔符
+输出：Map&lt;String, String&gt; 格式的分割结果
+2. EMPTYVALUEREPLACE - 字段空值替换
+将空值或空白文本替换为默认值。
+参数：
+- inputText：输入文本
+- defaultValue：默认替换值
+输出：处理后的字符串
+3. FORMULA_CALCULATE - 公式计算
+执行数学公式计算，支持变量替换。
+参数：
+- formula：计算公式（如 "a + b * 2"）
+- variables：变量映射表
+输出：计算结果
+4. HTMLTOPLAIN_TEXT - HTML转纯文本
+将HTML内容转换为干净的纯文本，支持Markdown格式输出。
+参数：
+- inputText：HTML文本
+输出：纯文本内容
+5. MARKDOWNTOHTML - Markdown转HTML
+将Markdown文本转换为HTML格式。
+参数：
+- inputText：Markdown文本
+输出：HTML格式文本
+6. EXTRACT_NUMBERS - 提取数字
+从文本中提取所有阿拉伯数字。
+参数：
+- inputText：输入文本
+输出：包含数字值和原始字符串的数组
+7. EXTRACT_URLS - 提取URL链接
+从文本中提取所有HTTP/HTTPS链接。
+参数：
+- inputText：输入文本
+输出：URL链接数组
+8. SEARCHANDCOUNT - 查询并计数
+统计关键词在文本中出现的次数。
+参数：
+- inputText：输入文本
+- keyword：搜索关键词
+输出：出现次数（整数）
+9. REMOVEHTMLTAGS - 删除HTML标签
+移除文本中的所有HTML标签。
+参数：
+- inputText：HTML文本
+输出：纯文本内容
+10. LIMIT_LENGTH - 文本长度限制
+按指定长度截断文本，可添加省略号。
+参数：
+- inputText：输入文本
+- maxLength：最大长度
+- addEllipsis：是否添加省略号
+输出：截断后的文本
+11. CONVERTTONUMBER - 转换为数字
+将文本转换为数字，支持多种转换方式。
+参数：
+- inputText：输入文本
+- numberConversionType：转换类型（ROUND/CEIL/FLOOR/ADDTHOUSAND/DELTHOUSAND）
+- decimalPlaces：小数位数
+输出：包含数字值和格式化字符串的Map
+12. NUMBERTOCHINESE - 数字转中文
+将阿拉伯数字转换为中文数字。
+参数：
+- inputText：数字文本
+- chineseNumberType：中文类型（LOWERCASE/UPPERCASE）
+输出：中文数字字符串
+13. VALIDATE_INFO - 校验信息有效性
+验证邮箱、手机号、身份证、URL等格式。
+参数：
+- inputText：待验证文本
+- validationType：验证类型（EMAIL/PHONE/ID_CARD/URL）
+输出：包含验证结果和消息的Map
+14. JSONTOCSV - JSON转CSV
+将JSON数组转换为CSV格式。
+参数：
+- inputText：JSON文本
+输出：CSV格式字符串
+15. CSVTOJSON_LINES - CSV转JSONLines
+将CSV转换为JSON Lines格式。
+参数：
+- inputText：CSV文本
+输出：JSON Lines字符串
+## 配置参数
+TextAction 基础参数
+- type：操作类型（必需）
+- inputText：输入文本（大部分操作需要）
+类型特定参数
+根据操作类型需要不同的额外参数，详见各操作类型说明。
+使用方法
+示例1：文本分割
+```json
+{
+  "type": "TEXT_SPLIT",
+  "inputText": "张三,李四,王五",
+  "customSeparator": ","
+}
+```
+输出：
+```json
+{"key1": "张三", "key2": "李四", "key3": "王五"}
+```
+示例2：邮箱验证
+```json
+{
+  "type": "VALIDATE_INFO",
+  "inputText": "user@example.com",
+  "validationType": "EMAIL"
+}
+```
+输出：
+```json
+{"valid": true, "message": "邮箱格式正确"}
+```
+示例3：数字格式转换
+```json
+{
+  "type": "CONVERT_TO_NUMBER",
+  "inputText": "1234.567",
+  "numberConversionType": "ADD_THOUSAND",
+  "decimalPlaces": 2
+}
+```
+输出：
+```json
+{"number": 1234.57, "formatted": "1,234.57"}
+```
+示例4：公式计算
+```json
+{
+  "type": "FORMULA_CALCULATE",
+  "formula": "price * quantity + tax",
+  "variables": {
+    "price": 10.5,
+    "quantity": 3,
+    "tax": 2.1
+  }
+}
+```
+输出：35.6
+执行逻辑
+参数验证
+## 检查操作类型是否支持
+2.
+- 验证必需参数是否存在
+3.
+- 验证参数格式和范围
+操作执行
+根据操作类型调用对应的处理方法：
+## 解析输入参数
+## 执行具体的文本处理逻辑
+## 格式化输出结果
+错误处理
+- 参数验证失败抛出异常
+- 处理逻辑异常返回错误信息
+- 记录详细的错误日志
+输出结果
+成功输出
+根据操作类型返回不同格式的结果：
+- 字符串：文本处理结果
+- 数字：计数或计算结果
+- 对象：结构化数据
+- 数组：列表数据
+错误输出
+```json
+{
+  "error": "文本处理操作执行失败: 参数不能为空"
+}
+```
+高级功能
+变量替换
+在公式计算和参数中使用流程变量：
+```json
+{
+  "formula": "${basePrice} * ${quantity} * (1 + ${taxRate})",
+  "variables": {
+    "basePrice": "${item.price}",
+    "quantity": "${order.quantity}",
+    "taxRate": "${config.taxRate}"
+  }
+}
+```
+批量处理
+结合循环节点处理多条数据：
+```json
+{
+  "loop": "遍历文本列表",
+  "steps": [
+    "TextAction (处理每条文本)",
+    "VarAction (收集处理结果)"
+  ]
+}
+```
+条件处理
+根据文本内容进行条件判断：
+```json
+{
+  "textAction": "提取关键词",
+  "condition": "检查关键词数量",
+  "branches": [
+    "Branch1: 关键词充足",
+    "Branch2: 需要补充"
+  ]
+}
+```
+## 最佳实践
+## 选择合适的操作类型
+- 文本清洗：使用REMOVEHTMLTAGS或HTMLTOPLAIN_TEXT
+- 数据提取：使用EXTRACTNUMBERS或EXTRACTURLS
+- 格式转换：使用JSONTOCSV或MARKDOWNTOHTML
+## 参数配置优化
+- 使用自定义分隔符提高分割精确度
+- 设置合理的长度限制避免性能问题
+- 根据需要选择中文数字的大小写
+## 错误处理
+- 检查输入文本是否为空
+- 
+## 验证参数格式正确性
+- 处理异常情况的降级方案
+## 性能监控
+- 监控处理耗时
+- 统计操作成功率
+- 分析内存使用情况
+调试和监控
+处理日志
+- 记录输入参数和操作类型
+- 输出处理结果和耗时
+- 记录异常信息和堆栈
+性能指标
+- 各操作类型的平均处理时间
+- 内存使用峰值
+- 错误率统计
+## 常见问题
+Q: 如何处理包含特殊字符的文本？
+A: 对于包含特殊字符的文本，建议先进行转义或使用自定义分隔符。HTML转纯文本功能会自动处理HTML实体编码。
+Q: 公式计算支持哪些运算符？
+A: 支持基本的四则运算（+、-、*、/），运算符优先级正确。变量通过`$\{variable\}`语法引用。
+Q: 数字转换的精度如何保证？
+A: 使用BigDecimal进行高精度计算，支持指定小数位数。ROUND类型使用四舍五入，CEIL向上取整，FLOOR向下取整。
+Q: 如何验证自定义格式的数据？
+A: 对于内置验证类型之外的格式，可以使用SEARCHANDCOUNT配合正则表达式，或通过外部脚本实现自定义验证。
+Q: 大文件处理有什么限制？
+A: 单次处理的文本大小建议不超过10MB。对于超大文件，建议分块处理或使用流式处理方式。
