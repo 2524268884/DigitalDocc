@@ -26,7 +26,7 @@ ConditionParam
 - OR逻辑：多个ConditionGroup之间是OR关系，只要一个组满足即可
 - AND逻辑：单个ConditionGroup内的ConditionItem之间是AND关系，所有条件都需满足
 - 分支选择：条件为真时执行"true"分支，假时执行"false"分支
-## 配置参数
+1. 配置参数
 条件组
 - orList：条件组列表，类型为List&lt;ConditionGroup&gt;
 条件项
@@ -53,7 +53,7 @@ ConditionParam
 | in | 在集合内 | `value.contains(query)` |
 | nin | 不在集合内 | `!value.contains(query)` |
 使用方法
-## 配置简单条件
+1. 配置简单条件
 单个条件判断：
 ```json
 {
@@ -70,7 +70,7 @@ ConditionParam
   ]
 }
 ```
-## 配置复合条件
+1. 配置复合条件
 AND条件（所有条件都要满足）：
 ```json
 {
@@ -92,7 +92,7 @@ AND条件（所有条件都要满足）：
   ]
 }
 ```
-## 配置OR条件
+1. 配置OR条件
 OR条件（任一条件满足即可）：
 ```json
 {
@@ -118,7 +118,7 @@ OR条件（任一条件满足即可）：
   ]
 }
 ```
-## 配置复杂条件
+1. 配置复杂条件
 组合AND和OR：
 ```json
 {
@@ -167,12 +167,12 @@ OR条件（任一条件满足即可）：
 - 日期比较：支持日期字符串格式
 执行流程
 条件求值过程
-## 遍历orList中的每个ConditionGroup
+1. 遍历orList中的每个ConditionGroup
 2. 对每个ConditionGroup，检查其andList中的所有ConditionItem
 3. 对每个ConditionItem，执行query operator value的比较
 4. 如果ConditionGroup中所有ConditionItem都为true，则该组为true
 5. 如果任意ConditionGroup为true，则整体条件为true
-## 根据结果选择true分支或false分支继续执行
+2. 根据结果选择true分支或false分支继续执行
 分支执行
 - true分支：条件满足时执行的后续节点
 - false分支：条件不满足时执行的后续节点
@@ -229,23 +229,23 @@ OR条件（任一条件满足即可）：
 大数据处理
 - 支持集合操作的优化算法
 - 避免全量遍历的性能问题
-## 最佳实践
-## 条件设计原则
+1. 最佳实践
+2. 条件设计原则
 - 保持条件简洁，避免过度复杂的嵌套
 - 使用有意义的变量名和比较值
 - 优先使用AND条件，减少OR复杂度
-## 变量管理
+1. 变量管理
 - 确保条件中使用的变量已被正确赋值
 - 使用类型一致的变量和比较值
 - 避免使用可能为null的变量
-## 分支设计
+1. 分支设计
 - 为每个分支设计明确的业务逻辑
 - 避免分支间的业务耦合
 - 考虑异常情况的处理分支
-## 测试验证
+1. 测试验证
 - 为复杂条件编写测试用例
 - 
-## 验证边界条件和异常情况
+1. 验证边界条件和异常情况
 - 确保分支覆盖率
 调试和监控
 条件求值日志
@@ -256,7 +256,7 @@ OR条件（任一条件满足即可）：
 - 条件求值平均耗时
 - 缓存命中率
 - 错误率统计
-## 常见问题
+1. 常见问题
 Q: 如何处理null值比较？
 A: 系统会将null值视为false。对于需要检查null的场景，使用专门的null检查操作符或转换为字符串比较。
 Q: 支持正则表达式匹配吗？

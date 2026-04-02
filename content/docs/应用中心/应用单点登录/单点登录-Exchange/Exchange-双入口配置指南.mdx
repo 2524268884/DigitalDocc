@@ -3,7 +3,7 @@ title: "Exchange-双入口配置指南"
 ---
 
 Exchange 双入口（内网FBA / 外网 SAML-ADFS）配置指南
-## 适用场景
+1. 适用场景
 - 内网入口：访问 Exchange OWA/ECP，保留表单认证（FBA）。
 - 外网入口：经钉钉网关访问，跳转 数犀集成平台 → ADFS → Exchange，完成 SAML 登录。
 - 单服务器（如 MAIL01）上通过“两个 IIS 站点 + 两套虚拟目录”实现内外分流。
@@ -131,7 +131,7 @@ Invoke-WebRequest http://mail-internal.digitalsee.co/owa/ -UseBasicParsing -Maxi
 # 外网入口应 302 到 ADFS/IDaaS 登录页
 Invoke-WebRequest https://mail01.digitalsee.co/owa/ -UseBasicParsing -MaximumRedirection 0
 ```
-## 常见问题
+1. 常见问题
 - 在 IIS 手工创建的 owa/ecp 目录 Exchange 不识别，需用 Exchange 命令 New-OwaVirtualDirectory/ New-EcpVirtualDirectory 创建。
 - Get-Website 等 IIS 命令报找不到提供程序：请在“Windows PowerShell（管理员）”下安装并导入 WebAdministration，或使用 appcmd。
 - DNS 未解析导致访问失败：先用 hosts 临时验证，再落地到内网 DNS。
