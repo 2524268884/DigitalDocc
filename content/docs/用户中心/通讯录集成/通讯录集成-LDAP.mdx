@@ -1,5 +1,6 @@
 ---
 title: "通讯录集成-LDAP"
+description: "将 LDAP 目录服务的用户和组织数据集成到数犀集成平台。"
 ---
 
 ## 概述
@@ -1418,3 +1419,11 @@ LDAP: 50
   - 解析memberOf属性获取用户所属组：`=PARSEMEMBEROF(memberOf)`
   - 构建用户-组关系对象：`=MAP(PARSEMEMBEROF(memberOf), "{ 'group': item, 'type': 'member' }")`
 这些映射函数和方法可以组合使用，构建复杂的数据转换逻辑，满足各种集成场景的需求。
+
+## 相关文档
+
+<Cards>
+  <Card title="通讻录数据流转概述" href="/docs/用户中心/通讻录数据流转概述" description="集成 vs 同步方向选型" />
+  <Card title="认证源-LDAP" href="/docs/用户中心/认证源管理/认证源-LDAP" description="配置 LDAP 账密登录" />
+  <Card title="通讻录集成-常见问题" href="/docs/用户中心/通讻录集成/通讻录集成-常见问题" description="常见问题排查" />
+</Cards>

@@ -1,5 +1,6 @@
 ---
 title: "通讯录集成-飞书"
+description: "将飞书的组织架构和用户数据集成到数犀集成平台，支持全量和增量同步。"
 ---
 
 ## 概述
@@ -1253,3 +1254,11 @@ Math.round(source.score * 100) / 100
 2. 部门路径构建：javascript// 构建完整部门路径source.department_path.split("/").slice(1).join("/")
 3. 用户-部门关系：javascript// 设置用户与部门的关联source.leaderuserid === source.user_id ? true : false
 - **复杂组织结构**：javascript
+
+## 相关文档
+
+<Cards>
+  <Card title="通讻录数据流转概述" href="/docs/用户中心/通讻录数据流转概述" description="集成 vs 同步方向选型" />
+  <Card title="认证源-飞书" href="/docs/用户中心/认证源管理/认证源-飞书" description="配置飞书扫码登录" />
+  <Card title="通讻录集成-常见问题" href="/docs/用户中心/通讻录集成/通讻录集成-常见问题" description="常见问题排查" />
+</Cards>

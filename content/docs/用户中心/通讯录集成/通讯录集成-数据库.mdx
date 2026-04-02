@@ -1,5 +1,6 @@
 ---
 title: "通讯录集成-数据库"
+description: "通过 SQL 查询从数据库拉取用户数据集成到数犀集成平台。"
 ---
 
 ## 概述
@@ -712,3 +713,10 @@ user_ids
 1. 基于时间戳：sqlSELECT * FROM usersWHERE update_time >= '2023-01-01 00:00:00'
 2. 基于状态标记：sqlSELECT * FROM usersWHERE sync_status = 'pending'
 - **组合策略**：同时使用时间戳和状态标记，提高同步准确性
+
+## 相关文档
+
+<Cards>
+  <Card title="通讻录数据流转概述" href="/docs/用户中心/通讻录数据流转概述" description="集成 vs 同步方向选型" />
+  <Card title="通讻录集成-常见问题" href="/docs/用户中心/通讻录集成/通讻录集成-常见问题" description="常见问题排查" />
+</Cards>

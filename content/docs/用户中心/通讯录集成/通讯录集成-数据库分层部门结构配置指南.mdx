@@ -1,5 +1,6 @@
 ---
 title: "通讯录集成-数据库分层部门结构配置指南"
+description: "数据库集成场景下配置多层级部门结构映射的方法。"
 ---
 
 ## 概述
@@ -306,3 +307,10 @@ WHERE last_update_time > :last_sync_time;
 1. 添加时效性标记
   - 在部门查询中添加有效期字段
   - 通过SQL自动筛选当前有效的组织关系
+
+## 相关文档
+
+<Cards>
+  <Card title="通讻录数据流转概述" href="/docs/用户中心/通讻录数据流转概述" description="集成 vs 同步方向选型" />
+  <Card title="通讻录集成-常见问题" href="/docs/用户中心/通讻录集成/通讻录集成-常见问题" description="常见问题排查" />
+</Cards>
