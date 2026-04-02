@@ -1,5 +1,6 @@
 ---
 title: "分支节点"
+description: "根据条件表达式在 AI 工作流中进行多路分支，实现差异化流程。"
 ---
 
 ## 概述
@@ -310,3 +311,10 @@ Q: 支持嵌套条件吗？
 A: 支持。每个ConditionGroup可以包含多个ConditionItem（AND关系），多个ConditionGroup之间是OR关系。可以构建复杂的嵌套条件逻辑。
 Q: 默认分支什么时候会执行？
 A: 当所有配置的分支条件都不满足时，会执行默认分支。默认分支总是存在，即使没有明确配置，也会返回一个标准的default分支对象。
+
+## 相关文档
+
+<Cards>
+  <Card title="AI 连接流功能概览" href="/docs/连接中心/AI 连接流/基础功能/功能概览" description="AI 连接流全局功能说明" />
+  <Card title="如何创建 AI 工作流" href="/docs/连接中心/AI 连接流/基础功能/如何创建 AI 工作流" description="快速上手教程" />
+</Cards>

@@ -1,5 +1,6 @@
 ---
 title: "MYSQL 触发动作说明"
+description: "在 AI 工作流中通过 MySQL 节点执行数据库查询、插入、更新操作。"
 ---
 
 ## 功能概述
@@ -125,3 +126,10 @@ ORDER BY sort ASC, unique ASC
 - 排序字段建议使用创建时间或递增时间戳
 - 不建议在高频写入但无业务价值的表上使用该触发器
 - 若下游流程较重，需评估新增数据量对流程执行压力的影响
+
+## 相关文档
+
+<Cards>
+  <Card title="AI 连接流功能概览" href="/docs/连接中心/AI 连接流/基础功能/功能概览" description="AI 连接流全局功能说明" />
+  <Card title="如何创建 AI 工作流" href="/docs/连接中心/AI 连接流/基础功能/如何创建 AI 工作流" description="快速上手教程" />
+</Cards>
