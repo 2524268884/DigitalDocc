@@ -52,10 +52,10 @@ https://target-app.com/callback?code=xxx&state=xxx&locale=en-US
 ## 常见问题
 
 <Accordions>
-<Accordion title="如果目标应用不支持 locale 参数，会不会导致跳转失败？》
+<Accordion title="如果目标应用不支持 locale 参数，会不会导致跳转失败?">
 不会。语言参数作为 URL 查询参数附加在目标地址后，不影响原有的 code 和 state 参数。若应用不需要此参数，可直接忽略，不会导致认证失败。
 </Accordion>
-<Accordion title="用户在钉钉容器内访问登录页，语言参数是否生效？》
+<Accordion title="用户在钉钉容器内访问登录页，语言参数是否生效?">
 钉钉内嵌浏览器环境下，登录页会优先使用钉钉应用的语言设置，URL 中的 locale 参数在这种情况下可能不生效。建议在非钉钉环境的浏览器中使用此功能。
 </Accordion>
 </Accordions>
