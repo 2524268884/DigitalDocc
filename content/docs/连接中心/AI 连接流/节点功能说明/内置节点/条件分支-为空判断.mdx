@@ -1,0 +1,79 @@
+---
+title: 条件分支与 Switch 节点：为空判断
+description: 条件分支节点和 Switch 节点新增「为空」与「不为空」操作符，支持对字段空值状态进行判断和分支路由。
+---
+
+## 功能概述
+
+条件分支节点（Condition Node）和 Switch 节点在原有操作符基础上，新增了**「为空（is empty）」**与**「不为空（is not empty）」**两种判断条件，用于处理字段值为 `null`、`undefined`、空字符串或空数组等空值场景。
+
+**判断规则：**
+
+| 值 | 「为空」判断结果 |
+|----|---------------|
+| `null` | ✅ 为空 |
+| `undefined` | ✅ 为空 |
+| `""` 空字符串 | ✅ 为空 |
+| `[]` 空数组 | ✅ 为空 |
+| `{}` 空对象 | ✅ 为空 |
+| `0` | ❌ 不为空 |
+| `false` | ❌ 不为空 |
+| 任意非空值 | ❌ 不为空 |
+
+## 配置步骤
+
+<Steps>
+<Step>
+### 步骤一：添加条件分支或 Switch 节点
+
+在流程画布中，添加「条件分支」或「Switch」节点至需要判断的位置。
+</Step>
+<Step>
+### 步骤二：选择「为空」或「不为空」操作符
+
+在节点配置面板中，选择需要判断的字段，然后在操作符下拉列表中选择：
+
+- **为空（is empty）**：字段值为空时，走此分支
+- **不为空（is not empty）**：字段值不为空时，走此分支
+
+<ImageZoom src="/images/ai-flow/condition-empty-operator.png" alt="为空操作符配置界面" width={800} height={450} />
+
+<Callout type="info">
+「为空」和「不为空」操作符不需要填写对比值，选择操作符后直接保存即可。
+</Callout>
+</Step>
+<Step>
+### 步骤三：配置各分支的后续节点
+
+为「为空」和「不为空」两个分支分别连接对应的处理节点，完成整体流程配置。
+</Step>
+</Steps>
+
+## 使用示例
+
+**场景：处理 Webhook 数据时，根据 `phone` 字段是否为空走不同逻辑**
+
+```
+条件分支
+├── phone 为空 → 发送邮件通知管理员补全信息
+└── phone 不为空 → 正常写入用户系统
+```
+
+## 常见问题
+
+<Accordions>
+<Accordion title="数字 0 和布尔值 false 会被判断为空吗？">
+不会。「为空」只判断 null、undefined、空字符串、空数组、空对象，数字 0 和布尔值 false 均视为「不为空」。
+</Accordion>
+<Accordion title="Switch 节点的 default 分支会处理为空的情况吗？">
+如果没有显式配置「为空」分支，且字段值为空时没有其他条件匹配，则会走 default 分支。建议显式配置空值分支，避免逻辑歧义。
+</Accordion>
+</Accordions>
+
+## 相关文档
+
+<Cards>
+  <Card title="条件分支节点" href="/docs/连接中心/AI 连接流/节点功能说明/内置节点/条件分支" />
+  <Card title="数据校验节点（Guard）" href="/docs/连接中心/AI 连接流/节点功能说明/内置节点/数据校验节点" />
+  <Card title="错误处理" href="/docs/连接中心/AI 连接流/基础功能/错误处理" />
+</Cards>

@@ -1,0 +1,106 @@
+---
+title: OpenClaw 节点
+description: 在 AI 连接流中对接私有化部署的 OpenClaw AI 网关，通过主动建立 WebSocket 连接实现内网 AI 能力的跨网调用。
+---
+
+## 功能概述
+
+**OpenClaw 节点**使数犀集成平台能够调用部署在客户内网的 OpenClaw 私有化 AI 网关，将企业私有 AI 能力无缝接入 AI 连接流的编排逻辑中。
+
+由于 OpenClaw 运行在客户内网，无法从公网直接访问，OpenClaw 节点采用**主动出站连接**模式：由 OpenClaw 主动与集成平台建立持久 WebSocket 连接，集成平台通过此通道下发任务并接收 AI 响应结果。
+
+**核心能力：**
+- 无需开放内网端口，OpenClaw 主动出站建立连接
+- 支持在 AI 连接流中直接调用私有化 AI 模型
+- AI 响应结果可作为变量在后续节点中使用
+- 支持多租户隔离，不同客户的 OpenClaw 实例独立管理
+
+## 网络架构
+
+```
+[客户内网]                    [公网/集成平台]
+OpenClaw 实例
+    │
+    │ 主动建立 WebSocket 连接（出站，无需开放入站端口）
+    ▼
+数犀集成平台 WebSocket 服务端
+    │
+    │ 下发 AI 任务
+    ▼
+OpenClaw 执行 AI 推理
+    │
+    │ 返回结果
+    ▼
+AI 连接流后续节点
+```
+
+## 配置步骤
+
+<Steps>
+<Step>
+### 步骤一：在集成平台创建 OpenClaw 连接
+
+在数犀集成平台管理控制台中，进入 **连接中心 > 凭证管理**，新建「OpenClaw」类型的凭证，获取连接所需的：
+
+- **接入地址（WebSocket URL）**
+- **连接 Token**
+</Step>
+<Step>
+### 步骤二：在 OpenClaw 侧配置接入
+
+在客户内网的 OpenClaw 管理后台，添加「数犀集成平台」通道，填写上一步获取的接入地址和 Token，保存后 OpenClaw 将自动发起 WebSocket 连接。
+
+<Callout type="info">
+OpenClaw 的出站流量需能访问公网地址，请确认内网防火墙未阻断出站 WebSocket 连接（通常为 443 端口）。
+</Callout>
+</Step>
+<Step>
+### 步骤三：验证连接状态
+
+在凭证管理页面，确认 OpenClaw 凭证状态显示为「已连接」，表明 WebSocket 通道建立成功。
+
+<Callout type="warn">
+若状态持续显示「未连接」，请检查：OpenClaw 服务是否正常运行、Token 是否正确、出站网络是否畅通。
+</Callout>
+</Step>
+<Step>
+### 步骤四：在 AI 连接流中添加 OpenClaw 节点
+
+在 AI 连接流画布中，找到「OpenClaw」节点，拖入画布并配置：
+
+| 配置项 | 说明 |
+|--------|------|
+| 凭证 | 选择已配置的 OpenClaw 凭证 |
+| 会话模式 | 单轮（每次独立调用）/ 多轮（保持上下文） |
+| 提示词 | 发送给 AI 的指令，支持引用上游节点输出变量 |
+| 超时时间（秒）| AI 推理的最大等待时间，建议根据模型响应速度设置 |
+</Step>
+<Step>
+### 步骤五：引用 AI 响应结果
+
+OpenClaw 节点执行完成后，在后续节点中引用 AI 回复内容：
+
+```text
+{{$node['OpenClaw节点ID'].output.content}}
+```
+</Step>
+</Steps>
+
+## 常见问题
+
+<Accordions>
+<Accordion title="OpenClaw 断线重连后，正在执行的流程会受影响吗？">
+WebSocket 断线期间，正在等待 AI 响应的流程实例会超时报错。OpenClaw 重新连接后，新触发的流程实例可正常调用。
+</Accordion>
+<Accordion title="是否支持同时接入多个 OpenClaw 实例？">
+支持。可在凭证管理中创建多个 OpenClaw 凭证，每个对应不同的 OpenClaw 实例，在节点配置中按需选择。
+</Accordion>
+</Accordions>
+
+## 相关文档
+
+<Cards>
+  <Card title="凭证管理" href="/docs/连接中心/凭证管理" />
+  <Card title="AI 节点说明" href="/docs/连接中心/AI 连接流/节点功能说明/AI 节点" />
+  <Card title="错误处理" href="/docs/连接中心/AI 连接流/基础功能/错误处理" />
+</Cards>
