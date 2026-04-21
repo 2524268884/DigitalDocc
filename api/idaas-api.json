@@ -1,0 +1,3515 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "1-安全认证"
+    },
+    {
+      "name": "2-组织部门API"
+    },
+    {
+      "name": "3-用户API"
+    },
+    {
+      "name": "5-角色管理"
+    },
+    {
+      "name": "6-数据连接"
+    },
+    {
+      "name": "4-通讯录集成连接器事件通知"
+    }
+  ],
+  "paths": {
+    "/iam/token": {
+      "post": {
+        "summary": "获取access_token（请求体方式）",
+        "deprecated": false,
+        "description": "通过请求体方式获取访问令牌（access_token）",
+        "tags": [
+          "1-安全认证"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型",
+            "required": true,
+            "example": "application/x-www-form-urlencoded",
+            "schema": {
+              "type": "string",
+              "default": "application/x-www-form-urlencoded"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "description": "认证方式，取值为client_credentials",
+                    "type": "string",
+                    "default": "client_credentials",
+                    "x-remark": "当前仅支持client_credentials方式",
+                    "examples": [
+                      "client_credentials"
+                    ],
+                    "example": "client_credentials"
+                  },
+                  "client_id": {
+                    "description": "请求体认证方式时需要提供的应用ID",
+                    "type": "string",
+                    "x-remark": "创建应用时获取的应用ID",
+                    "examples": [
+                      "1234567890abcdef"
+                    ],
+                    "example": "1234567890abcdef"
+                  },
+                  "client_secret": {
+                    "description": "请求体认证方式时需要提供的应用凭证",
+                    "type": "string",
+                    "x-remark": "创建应用时获取的应用凭证",
+                    "examples": [
+                      "c0463b3a8852469282ba2dd61c3b5790"
+                    ],
+                    "example": "c0463b3a8852469282ba2dd61c3b5790"
+                  }
+                },
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "访问令牌"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "description": "令牌类型，固定为bearer"
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "description": "令牌有效期，单位为秒"
+                    },
+                    "scope": {
+                      "type": "string",
+                      "description": "令牌权限范围"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/token/basic": {
+      "post": {
+        "summary": "获取access_token（Basic认证方式）",
+        "deprecated": false,
+        "description": "通过Basic认证方式获取访问令牌（access_token）",
+        "tags": [
+          "1-安全认证"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型",
+            "required": true,
+            "example": "application/x-www-form-urlencoded",
+            "schema": {
+              "type": "string",
+              "default": "application/x-www-form-urlencoded"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Basic认证方式，格式为Basic base64({client_id}:{client_secret})",
+            "required": true,
+            "example": "Basic ZGlnaXRhbHNlZToxMjM0NTY=",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "description": "认证方式，取值为client_credentials",
+                    "type": "string",
+                    "default": "client_credentials",
+                    "x-remark": "当前仅支持client_credentials方式",
+                    "examples": [
+                      "client_credentials"
+                    ],
+                    "example": "client_credentials"
+                  }
+                },
+                "required": [
+                  "grant_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "访问令牌"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "description": "令牌类型，固定为bearer"
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "description": "令牌有效期，单位为秒"
+                    },
+                    "scope": {
+                      "type": "string",
+                      "description": "令牌权限范围"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/orgs": {
+      "get": {
+        "summary": "获取组/部门的列表",
+        "deprecated": false,
+        "description": "该接口用于检索组织架构中的所有组/部门列表",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "attrs",
+            "in": "query",
+            "description": "组/部门属性，多个属性间以逗号分隔",
+            "required": false,
+            "example": "id,name,description,org_path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "页码，默认为1",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数，默认为10",
+            "required": false,
+            "example": 20,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "请求处理结果，成功时为true，失败时为false"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，成功时为0，失败时为具体的错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "详细的错误描述信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "组/部门名称"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "组/部门唯一标识符"
+                              },
+                              "org_path": {
+                                "type": "string",
+                                "description": "组/部门路径"
+                              },
+                              "tenant_id": {
+                                "type": "string",
+                                "description": "租户ID"
+                              },
+                              "parentRefId": {
+                                "type": "string",
+                                "description": "父级组/部门ID，根组为-1"
+                              }
+                            }
+                          }
+                        },
+                        "totalItems": {
+                          "type": "integer",
+                          "description": "总项数"
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "description": "总页数"
+                        },
+                        "currentPage": {
+                          "type": "integer",
+                          "description": "当前页码"
+                        },
+                        "pageSize": {
+                          "type": "integer",
+                          "description": "每页大小"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "创建组/部门",
+        "deprecated": false,
+        "description": "创建一个新的组/部门",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parent_id": {
+                    "type": "string",
+                    "description": "直接上级组/部门的ID，根组ID为-1或_root",
+                    "x-remark": "如果是一级部门，则使用-1或_root",
+                    "examples": [
+                      "-1"
+                    ],
+                    "example": "-1"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "新组/部门的名称",
+                    "x-remark": "部门名称长度一般不超过50个字符",
+                    "examples": [
+                      "研发部"
+                    ],
+                    "example": "研发部"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "组/部门的描述信息",
+                    "x-remark": "可选字段，用于补充说明部门职责",
+                    "examples": [
+                      "负责产品研发和技术支持"
+                    ],
+                    "example": "负责产品研发和技术支持"
+                  },
+                  "seq": {
+                    "type": "string",
+                    "description": "同一层级的部门排序值",
+                    "x-remark": "值越小排序越靠前，可选字段",
+                    "examples": [
+                      "1"
+                    ],
+                    "example": "1"
+                  },
+                  "manager": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "部门主管对应的用户ID，多个用数组表示",
+                    "x-remark": "可选字段，指定部门主管",
+                    "examples": [
+                      [
+                        "1234567890",
+                        "0987654321"
+                      ]
+                    ],
+                    "example": [
+                      "1234567890",
+                      "0987654321"
+                    ]
+                  }
+                },
+                "required": [
+                  "parent_id",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "请求处理结果，成功时为true，失败时为false"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，成功时为0，失败时为具体的错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "详细的错误描述信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "新创建的组/部门的唯一标识ID"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/orgs/{org_id}": {
+      "get": {
+        "summary": "根据组/部门ID获取组/部门的信息",
+        "deprecated": false,
+        "description": "根据指定的组/部门ID获取该组/部门的相关信息",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "description": "组/部门的ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attrs",
+            "in": "query",
+            "description": "组/部门属性，例如id,name,description,org_path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "请求处理结果，成功时为true，失败时为false"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，成功时为0，失败时为具体的错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "详细的错误描述信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "组/部门的名称"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "组/部门的描述信息"
+                        },
+                        "num_of_children": {
+                          "type": "integer",
+                          "description": "子级组/部门的数量"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "组/部门的唯一标识ID"
+                        },
+                        "org_path": {
+                          "type": "string",
+                          "description": "组/部门的组织路径"
+                        },
+                        "num_of_users": {
+                          "type": "integer",
+                          "description": "组/部门中用户的数量"
+                        },
+                        "tenant_id": {
+                          "type": "string",
+                          "description": "租户ID"
+                        },
+                        "parentRefId": {
+                          "type": "string",
+                          "description": "当前组/部门的父级ID"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "patch": {
+        "summary": "修改组/部门",
+        "deprecated": false,
+        "description": "修改指定的组/部门信息",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "description": "组/部门的ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parent_id": {
+                    "type": "string",
+                    "description": "直接上级组/部门的ID，根组ID为-1或_root",
+                    "example": ""
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "组/部门的名称",
+                    "example": ""
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "组/部门的描述信息",
+                    "example": ""
+                  },
+                  "seq": {
+                    "type": "string",
+                    "description": "同一层级的部门排序值",
+                    "example": ""
+                  },
+                  "manager": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "部门主管对应的用户ID列表",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "parent_id",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "请求处理结果，成功时为true，失败时为false"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，成功时为0，失败时为具体的错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "详细的错误描述信息"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除组/部门",
+        "deprecated": false,
+        "description": "删除指定的组或部门",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "description": "组/部门的唯一标识符，长度为1至19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码（若操作失败）"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述（若操作失败）"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/orgs/{org_id}/subs": {
+      "get": {
+        "summary": "根据组/部门ID获取下级组/部门信息",
+        "deprecated": false,
+        "description": "根据指定的组/部门ID获取其下级组/部门的信息",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "description": "组/部门的ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attrs",
+            "in": "query",
+            "description": "组/部门属性",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "description": "根据深度参数返回下级组织：0返回所有的下级树，1返回第一级的下级节点/下级组",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "请求处理结果，成功时为true，失败时为false"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，成功时为0，失败时为具体的错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "详细的错误描述信息"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "parentRefId": {
+                            "type": "string",
+                            "description": "当前组/部门的父级ID"
+                          },
+                          "children": {
+                            "type": "array",
+                            "description": "当前组/部门的子级组/部门列表",
+                            "items": {}
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "组/部门的名称"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "组/部门的描述信息"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "组/部门的唯一标识ID"
+                          },
+                          "org_path": {
+                            "type": "string",
+                            "description": "组/部门的组织路径"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/orgs/search": {
+      "post": {
+        "summary": "过滤部门信息",
+        "deprecated": false,
+        "description": "根据指定的过滤条件查询部门信息",
+        "tags": [
+          "2-组织部门API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "attrs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "属性名，取值不能为空数组",
+                    "example": ""
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "第几页",
+                    "example": 0
+                  },
+                  "size": {
+                    "type": "integer",
+                    "description": "每页条数",
+                    "example": 0
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "attr": {
+                          "type": "string",
+                          "description": "过滤属性值"
+                        },
+                        "op": {
+                          "type": "string",
+                          "description": "比较符号: gt(大于)、lt(小于)、eq(等于)"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "值"
+                        }
+                      }
+                    },
+                    "description": "过滤条件",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "page",
+                  "size"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码（若操作失败）"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述（若操作失败）"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "orders": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "search_count": {
+                          "type": "boolean"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/users": {
+      "get": {
+        "summary": "查询用户",
+        "deprecated": false,
+        "description": "查询用户信息（支持分页）",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "attrs",
+            "in": "query",
+            "description": "用户属性，多个属性用逗号分隔",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "姓名/用户名/手机/邮箱/工号（模糊查询）",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "org_id",
+            "in": "query",
+            "description": "组/部门id，查询的所有用户都必须（直接或间接地）属于该组/部门",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页条数",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "return_users_in_sub_org",
+            "in": "query",
+            "description": "是否查询子组/子部门下的用户，默认值为true",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "sub": {
+                                "type": "string",
+                                "description": "用户的唯一标识符"
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "用户姓名"
+                              },
+                              "user_extension": {
+                                "type": "string",
+                                "description": "多个扩展字段"
+                              },
+                              "org_ids": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer"
+                                },
+                                "description": "用户所属组织ID列表"
+                              },
+                              "phone_number": {
+                                "type": "string",
+                                "description": "用户手机号码"
+                              },
+                              "orgs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "description": "用户所属组织名称列表"
+                              },
+                              "email": {
+                                "type": "string",
+                                "description": "用户电子邮件地址"
+                              },
+                              "username": {
+                                "type": "string",
+                                "description": "用户名"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "用户状态"
+                              }
+                            }
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "总项数"
+                        },
+                        "size": {
+                          "type": "integer",
+                          "description": "每页条数"
+                        },
+                        "page": {
+                          "type": "integer",
+                          "description": "当前页码"
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "description": "总页数"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "创建用户",
+        "deprecated": false,
+        "description": "创建单个用户。用户的组/部门属性可以是默认组/缺省组，但不能是根组。",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "用户登录名，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "用户密码",
+                    "example": ""
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "用户姓名，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "电子邮件",
+                    "example": ""
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "description": "手机号码",
+                    "example": ""
+                  },
+                  "user_job_number": {
+                    "type": "string",
+                    "description": "人员工号，长度限制1~32个字符",
+                    "example": ""
+                  },
+                  "nick_name": {
+                    "type": "string",
+                    "description": "昵称，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "picture": {
+                    "type": "string",
+                    "description": "头像，base64编码",
+                    "example": ""
+                  },
+                  "org_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "用户所属的组织ID列表",
+                    "example": ""
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "办公地点",
+                    "example": ""
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "职位",
+                    "example": ""
+                  },
+                  "hired_date": {
+                    "type": "string",
+                    "description": "入职时间（时间戳）",
+                    "example": ""
+                  },
+                  "tag": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "integer"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expression": {
+                          "type": "string"
+                        },
+                        "app_id": {
+                          "type": "string"
+                        },
+                        "app_name": {
+                          "type": "string"
+                        },
+                        "app_code": {
+                          "type": "string"
+                        },
+                        "group_is_default": {
+                          "type": "integer"
+                        },
+                        "group_description": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "description": "标签/角色信息",
+                    "example": ""
+                  },
+                  "group_positions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "is_main": {
+                          "type": "integer"
+                        },
+                        "is_manager": {
+                          "type": "integer"
+                        },
+                        "position": {
+                          "type": "string"
+                        },
+                        "user_code": {
+                          "type": "string"
+                        },
+                        "org_id": {
+                          "type": "string"
+                        },
+                        "org_name": {
+                          "type": "string"
+                        },
+                        "user_order": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "description": "用户对应的部门属性",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "username",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sub": {
+                          "type": "string",
+                          "description": "用户ID"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "用户登录名"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "用户姓名"
+                        },
+                        "phone_number": {
+                          "type": "string",
+                          "description": "手机号码"
+                        },
+                        "user_job_number": {
+                          "type": "string",
+                          "description": "人员工号"
+                        },
+                        "email": {
+                          "type": "string",
+                          "description": "电子邮件"
+                        },
+                        "nickname": {
+                          "type": "string",
+                          "description": "昵称"
+                        },
+                        "org_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "用户所属的组织ID列表"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "办公地点"
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "职位"
+                        },
+                        "hired_date": {
+                          "type": "string",
+                          "description": "入职时间"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "description": "创建时间"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/users/search": {
+      "post": {
+        "summary": "根据多个条件过滤并查询用户信息",
+        "deprecated": false,
+        "description": "根据多个条件过滤并查询用户信息，支持姓名、用户名、手机等进行查询",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filter": {
+                    "type": "string",
+                    "description": "姓名/用户名/手机/邮箱/工号（模糊查询）",
+                    "example": ""
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "用户状态，例如ACTIVE",
+                    "example": ""
+                  },
+                  "org_id": {
+                    "type": "string",
+                    "description": "部门ID",
+                    "example": ""
+                  },
+                  "include_users_in_sub_orgs": {
+                    "type": "boolean",
+                    "description": "是否包含子组织，默认为false",
+                    "example": ""
+                  },
+                  "attrs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "用户属性，取值不能为空数组",
+                    "example": ""
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "description": "操作符"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "值"
+                        },
+                        "attr": {
+                          "type": "string",
+                          "description": "属性名"
+                        }
+                      }
+                    },
+                    "description": "属性条件",
+                    "example": ""
+                  },
+                  "userIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "用户ID列表",
+                    "example": ""
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "页码，默认为0",
+                    "example": 0
+                  },
+                  "size": {
+                    "type": "integer",
+                    "description": "每页条数，默认为10",
+                    "example": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/user": {
+      "get": {
+        "summary": "根据用户帐号获取用户信息",
+        "deprecated": false,
+        "description": "根据用户帐号获取用户的详细信息",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "attrs",
+            "in": "query",
+            "description": "用户属性，多个属性用逗号分隔，例如sub,name,email,username,status,phone_number,user_job_number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户帐号，长度限制1~64个字符",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sub": {
+                          "type": "string",
+                          "description": "用户的唯一标识符"
+                        },
+                        "group_positions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "is_main": {
+                                "type": "integer",
+                                "description": "是否为主部门：1表示是，0表示否"
+                              },
+                              "is_manager": {
+                                "type": "integer",
+                                "description": "是否为部门主管：1表示是，0表示否"
+                              },
+                              "position": {
+                                "type": "string",
+                                "description": "部门职位名称"
+                              },
+                              "user_code": {
+                                "type": "string",
+                                "description": "部门工号"
+                              },
+                              "org_id": {
+                                "type": "string",
+                                "description": "部门ID"
+                              },
+                              "org_name": {
+                                "type": "string",
+                                "description": "部门名称"
+                              }
+                            }
+                          },
+                          "description": "用户在不同部门的职位信息"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "用户姓名"
+                        },
+                        "org_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "用户所属部门的ID列表"
+                        },
+                        "phone_number": {
+                          "type": "string",
+                          "description": "用户电话号码"
+                        },
+                        "user_job_number": {
+                          "type": "string",
+                          "description": "用户工号"
+                        },
+                        "tag": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "code": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "integer"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "expression": {
+                                "type": "string"
+                              },
+                              "app_id": {
+                                "type": "string"
+                              },
+                              "app_name": {
+                                "type": "string"
+                              },
+                              "app_code": {
+                                "type": "string"
+                              },
+                              "group_is_default": {
+                                "type": "integer"
+                              },
+                              "group_description": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "description": "用户标签信息"
+                        },
+                        "email": {
+                          "type": "string",
+                          "description": "用户电子邮件地址"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "用户帐号"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "用户状态（例如：ACTIVE）"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "patch": {
+        "summary": "修改用户",
+        "deprecated": false,
+        "description": "修改单个用户的信息",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户登录名，长度限制1~64个字符",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "用户姓名，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "电子邮件",
+                    "example": ""
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "description": "手机号码",
+                    "example": ""
+                  },
+                  "user_job_number": {
+                    "type": "string",
+                    "description": "人员工号，长度限制1~32个字符",
+                    "example": ""
+                  },
+                  "nick_name": {
+                    "type": "string",
+                    "description": "昵称，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "picture": {
+                    "type": "string",
+                    "description": "头像，base64编码",
+                    "example": ""
+                  },
+                  "org_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "用户所属的组织ID列表",
+                    "example": ""
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "办公地点",
+                    "example": ""
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "职位",
+                    "example": ""
+                  },
+                  "hired_date": {
+                    "type": "string",
+                    "description": "入职时间（标准日期时间格式）",
+                    "example": ""
+                  },
+                  "tag": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "标签/角色信息",
+                    "example": ""
+                  },
+                  "group_positions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "用户对应的部门属性",
+                    "example": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/users/status": {
+      "put": {
+        "summary": "启用/禁用用户",
+        "deprecated": false,
+        "description": "启用或禁用一个或多个用户",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "description": "用户状态，ACTIVE表示启用，SUSPENDED表示禁用",
+                    "example": ""
+                  },
+                  "usernames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "要启用或禁用用户的登录名列表",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "status",
+                  "usernames"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/users/delete": {
+      "post": {
+        "summary": "删除用户",
+        "deprecated": false,
+        "description": "删除一个或多个用户",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "要删除用户的登录名列表",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "usernames"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/users/password": {
+      "post": {
+        "summary": "修改用户密码",
+        "deprecated": false,
+        "description": "修改用户的密码",
+        "tags": [
+          "3-用户API"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "需要修改用户的登录名，长度限制1~64个字符",
+                    "x-remark": "用户系统中的唯一登录名",
+                    "examples": [
+                      "zhangsan"
+                    ],
+                    "example": "zhangsan"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "密码，需要使用Base64加密后的字符串",
+                    "x-remark": "至少包含8个字符，需包含大小写字母、数字和特殊字符。使用Base64编码后传输",
+                    "examples": [
+                      "UGFzc3dvcmQxMjM="
+                    ],
+                    "example": "UGFzc3dvcmQxMjM="
+                  }
+                },
+                "required": [
+                  "username",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作结果",
+                      "x-remark": "true表示密码修改成功",
+                      "examples": [
+                        true
+                      ]
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码",
+                      "x-remark": "操作失败时返回的错误代码",
+                      "examples": [
+                        "0"
+                      ]
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述",
+                      "x-remark": "操作失败时返回的错误详情",
+                      "examples": [
+                        "SUCCESS"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags": {
+      "post": {
+        "summary": "创建角色",
+        "deprecated": false,
+        "description": "创建新的角色。角色可以是静态的或动态的",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}。例如：Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "角色名称，长度限制1~64个字符。例如：系统管理员。角色名称应该简洁明了，表达角色的职能",
+                    "example": ""
+                  },
+                  "code": {
+                    "type": "string",
+                    "description": "角色编码，格式要求：只允许英文、数字、下划线的组合。例如：sys_admin。角色编码在系统中作为唯一标识，建议使用有意义的名称",
+                    "example": ""
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "角色描述，长度限制1~128个字符。例如：具有系统管理权限的角色，可以进行系统配置管理。可选字段，用于详细说明角色的用途和权限范围",
+                    "example": ""
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "STATIC",
+                      "DYNAMIC"
+                    ],
+                    "description": "动态角色或者静态角色, STATIC或者DYNAMIC，集成的角色默认为静态角色。例如：STATIC。静态角色需要手动分配给用户，动态角色基于表达式自动计算",
+                    "example": ""
+                  },
+                  "expression": {
+                    "type": "object",
+                    "description": "角色表达式，静态角色时无需填写表达式。例如：{\"fields\":[{\"attr\":\"department\",\"op\":\"eq\",\"value\":\"IT\"}]}。动态角色必填，定义了角色的动态计算规则",
+                    "example": ""
+                  },
+                  "app_id": {
+                    "type": "string",
+                    "description": "应用id，长度限制1~19个字符。例如：1234567890123456789。角色所属的应用ID",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "name",
+                  "code",
+                  "type",
+                  "app_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "string",
+                      "description": "创建成功的角色ID"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags/{id}": {
+      "get": {
+        "summary": "获取单个角色详情",
+        "deprecated": false,
+        "description": "获取指定角色的详细信息",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符。例如：1234567890123456789。系统生成的角色唯一标识符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}。例如：Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string",
+                          "description": "角色描述"
+                        },
+                        "expression": {
+                          "type": "string",
+                          "description": "表达式（可能为空）"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "角色名称"
+                        },
+                        "groups": {
+                          "type": "array",
+                          "description": "关联的组（可能为空）",
+                          "items": {}
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "角色ID"
+                        },
+                        "app_id": {
+                          "type": "string",
+                          "description": "应用ID（可能为空）"
+                        },
+                        "code": {
+                          "type": "string",
+                          "description": "角色编码"
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "角色类型（STATIC 或 DYNAMIC）"
+                        },
+                        "create_by": {
+                          "type": "string",
+                          "description": "创建者（可能为空）"
+                        },
+                        "create_time": {
+                          "type": "string",
+                          "description": "创建时间"
+                        },
+                        "update_time": {
+                          "type": "string",
+                          "description": "更新时间"
+                        },
+                        "user_counts": {
+                          "type": "integer",
+                          "description": "用户数量（可能为空）"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "修改角色",
+        "deprecated": false,
+        "description": "修改已有的角色信息",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "角色名称，长度限制1~64个字符",
+                    "example": ""
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "角色描述，长度限制1~128个字符",
+                    "example": ""
+                  },
+                  "expression": {
+                    "type": "object",
+                    "description": "角色表达式，静态角色时无需填写表达式",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除角色",
+        "deprecated": false,
+        "description": "删除指定的角色",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "被删除的角色信息对象",
+                      "properties": {}
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags/search": {
+      "post": {
+        "summary": "查询角色列表",
+        "deprecated": false,
+        "description": "查询应用下的角色列表，并支持分页查询",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "app_id": {
+                    "type": "string",
+                    "description": "应用ID，必须指定一个应用，长度限制1~19个字符",
+                    "example": ""
+                  },
+                  "filter": {
+                    "type": "string",
+                    "description": "模糊查询条件，可以是角色ID、角色编码或角色名称",
+                    "example": ""
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "STATIC",
+                      "DYNAMIC"
+                    ],
+                    "description": "角色类型，静态角色（STATIC）或动态角色（DYNAMIC）",
+                    "example": ""
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "页码",
+                    "example": 0
+                  },
+                  "size": {
+                    "type": "integer",
+                    "description": "每页条数",
+                    "example": 0
+                  }
+                },
+                "required": [
+                  "app_id",
+                  "page",
+                  "size"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          },
+                          "description": "角色列表"
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "总记录数"
+                        },
+                        "size": {
+                          "type": "integer",
+                          "description": "每页条数"
+                        },
+                        "page": {
+                          "type": "integer",
+                          "description": "当前页码"
+                        },
+                        "orders": {
+                          "type": "array",
+                          "description": "排序字段",
+                          "items": {}
+                        },
+                        "search_count": {
+                          "type": "boolean",
+                          "description": "是否计算总记录数"
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "description": "总页数"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags/getTagList": {
+      "get": {
+        "summary": "根据应用ID和用户ID获取角色列表",
+        "deprecated": false,
+        "description": "根据指定的应用ID和用户ID获取该用户在该应用中的角色列表",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "description": "应用ID，长度限制1~19个字符",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID，长度限制1~19个字符",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "description": {
+                            "type": "string",
+                            "description": "角色描述"
+                          },
+                          "expression": {
+                            "type": "string",
+                            "description": "表达式（可能为空）"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "角色名称"
+                          },
+                          "groups": {
+                            "type": "array",
+                            "description": "关联的组（可能为空）",
+                            "items": {}
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "角色ID"
+                          },
+                          "app_id": {
+                            "type": "string",
+                            "description": "应用ID（可能为空）"
+                          },
+                          "code": {
+                            "type": "string",
+                            "description": "角色编码"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "角色类型（STATIC 或 DYNAMIC）"
+                          },
+                          "create_by": {
+                            "type": "string",
+                            "description": "创建者（可能为空）"
+                          },
+                          "create_time": {
+                            "type": "string",
+                            "description": "创建时间"
+                          },
+                          "update_time": {
+                            "type": "string",
+                            "description": "更新时间"
+                          },
+                          "user_counts": {
+                            "type": "integer",
+                            "description": "用户数量（可能为空）"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags/{id}/users": {
+      "get": {
+        "summary": "查看角色所对应的用户列表",
+        "deprecated": false,
+        "description": "查看指定角色所对应的用户列表",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "过滤条件，用于过滤用户登录名、全名、电子邮件和手机号等属性",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页号",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页条数，最大为100",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          },
+                          "description": "用户列表"
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "总记录数"
+                        },
+                        "size": {
+                          "type": "integer",
+                          "description": "每页记录数"
+                        },
+                        "page": {
+                          "type": "integer",
+                          "description": "当前页号"
+                        },
+                        "orders": {
+                          "type": "array",
+                          "description": "排序信息（可能为空）",
+                          "items": {}
+                        },
+                        "search_count": {
+                          "type": "boolean",
+                          "description": "是否计算总记录数"
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "description": "总页数"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "给多个用户添加静态角色",
+        "deprecated": false,
+        "description": "给多个用户添加指定的静态角色",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "用户名集合，最多不能超过20个",
+                    "example": ""
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "测试",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "usernames"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "成功添加角色的用户名列表"
+                        },
+                        "failed": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "添加角色失败的用户名列表"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除用户静态角色",
+        "deprecated": false,
+        "description": "删除指定用户的静态角色",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "角色ID，长度限制1~19个字符",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户名，长度限制1~64个字符",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "操作结果数据",
+                      "properties": {}
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/tags/getTagList/user": {
+      "get": {
+        "summary": "获取用户的角色信息",
+        "deprecated": false,
+        "description": "获取指定用户的角色信息",
+        "tags": [
+          "5-角色管理"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户名，用户名和用户id两项必须填一项，都填写以用户id为准，长度限制1~64个字符",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID，用户名和用户id两项必须填一项，都填写以用户id为准，长度限制1~19个字符",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "通过获取access_token接口获取的访问令牌，格式为Bearer {access_token}",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "角色ID"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "角色名称"
+                          },
+                          "code": {
+                            "type": "string",
+                            "description": "角色编码"
+                          },
+                          "type": {
+                            "type": "integer",
+                            "description": "角色类型"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "角色描述"
+                          },
+                          "expression": {
+                            "type": "string",
+                            "description": "角色表达式（JSON格式）"
+                          },
+                          "app_id": {
+                            "type": "string",
+                            "description": "应用ID"
+                          },
+                          "app_name": {
+                            "type": "string",
+                            "description": "应用名称"
+                          },
+                          "app_code": {
+                            "type": "string",
+                            "description": "应用编码"
+                          },
+                          "group_is_default": {
+                            "type": "integer",
+                            "description": "是否为默认角色组（1表示是，默认为0）"
+                          },
+                          "group_description": {
+                            "type": "string",
+                            "description": "角色组描述"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/acm/flows/start/{actionId}/{flowId}/{apiKey}": {
+      "post": {
+        "summary": "Webhook启动连接流",
+        "deprecated": false,
+        "description": "第三方应用通过Webhook启动数据连接流，实现不同应用系统之间的数据流转",
+        "tags": [
+          "6-数据连接"
+        ],
+        "parameters": [
+          {
+            "name": "actionId",
+            "in": "path",
+            "description": "动作ID，例如：1。系统中配置的数据动作ID，对应特定的处理流程",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "flowId",
+            "in": "path",
+            "description": "数据连接流实例ID，例如：1701181399261417474。系统中配置的数据连接流ID，每个连接流代表一个完整的数据处理流程",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKey",
+            "in": "path",
+            "description": "API Key，例如：9a217c61e46b461fb5e8766b4e5e01da。用于认证的API密钥，确保调用方有权限启动连接流",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型，例如：application/json。必须使用application/json格式",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "触发事件要传递的数据，可以是任意JSON格式的数据。例如：{\"name\":\"张三\",\"mobile\":\"13800138000\",\"email\":\"zhangsan@example.com\",\"department\":\"研发部\",\"position\":\"工程师\"}。数据结构取决于具体业务需求，传递后会在连接流中进行处理",
+                    "example": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "连接流最后一个节点的输出数据（配置为同步时）。例如：{\"id\":\"12345\",\"status\":\"success\",\"message\":\"数据处理完成\"}。仅当连接流配置为同步模式时才会返回数据，否则为null",
+                      "properties": {}
+                    },
+                    "error_code": {
+                      "type": "integer",
+                      "description": "错误代码，例如：0。0表示成功，其他值表示失败"
+                    },
+                    "flow_id": {
+                      "type": "string",
+                      "description": "数据连接流实例ID，例如：1701181399261417474。对应请求中的flowId参数"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "操作结果描述，例如：推送成功。人类可读的操作结果说明"
+                    },
+                    "task_id": {
+                      "type": "string",
+                      "description": "任务ID，例如：1738789827758854145。可用于后续查询任务执行状态"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/iam/api/open/event/{tenantId}/{connectorId}/{apiKey}": {
+      "post": {
+        "summary": "连接器事件通知",
+        "deprecated": false,
+        "description": "接收来自外部系统的组织架构变更事件通知",
+        "tags": [
+          "4-通讯录集成连接器事件通知"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "租户编码，例如：org1234。标识组织或企业的唯一编码",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connectorId",
+            "in": "path",
+            "description": "用户集成连接器ID，例如：dingtalk_connector。标识特定集成连接器的唯一ID，如钉钉连接器、企业微信连接器等",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKey",
+            "in": "path",
+            "description": "API Key，例如：abc123def456ghi789。用于认证的API密钥，确保调用方有权限发送事件通知",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "请求内容类型，例如：application/json。必须使用application/json格式",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "event_type": {
+                    "type": "string",
+                    "enum": [
+                      "ADD_DEPARTMENT",
+                      "UPDATE_DEPARTMENT",
+                      "DELETE_DEPARTMENT",
+                      "ADD_USER",
+                      "UPDATE_USER",
+                      "DELETE_USER"
+                    ],
+                    "description": "组织架构变更事件类型，例如：ADD_USER。标识具体的变更操作类型",
+                    "example": ""
+                  },
+                  "external_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "部门或用户的外部ID列表，例如：[\"user123\", \"user456\"]。外部系统中的唯一标识符，用于关联内部系统的记录",
+                    "example": ""
+                  },
+                  "event_body": {
+                    "type": "object",
+                    "description": "部门或用户对象实体数据，例如：{\"name\":\"李四\",\"mobile\":\"13900139000\",\"email\":\"lisi@example.com\",\"department\":\"销售部\",\"position\":\"销售经理\",\"employee_id\":\"emp1001\"}。根据事件类型不同，包含不同的数据结构",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "event_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "操作是否成功，例如：true。true表示事件处理成功"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "错误代码，例如：0。当result为false时返回具体错误代码"
+                    },
+                    "error_description": {
+                      "type": "string",
+                      "description": "错误描述，例如：SUCCESS。当result为false时返回具体错误描述"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "webhooks": {},
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

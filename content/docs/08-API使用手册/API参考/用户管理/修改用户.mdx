@@ -1,0 +1,32 @@
+---
+title: "修改用户"
+description: "修改指定用户的信息。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "PATCH"
+  path: "/iam/api/user"
+  auth: "Bearer Token"
+  summary: "用于更新用户主数据而不是状态变更。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/user"
+      method: "patch"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：用于更新用户主数据而不是状态变更。
+- 请求路径：`/iam/api/user`

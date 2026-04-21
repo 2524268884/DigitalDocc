@@ -1,0 +1,115 @@
+---
+title: "单点登录-用友NCC"
+description: "本文档详细介绍如何配置专属集成平台与用友NCC系统之间的免登集成，实现统一身份认证和无缝登录体验。"
+---
+## 一、说明
+
+本文档详细介绍如何配置专属集成平台与用友NCC系统之间的免登集成，实现统一身份认证和无缝登录体验。
+
+## 二、前置条件
+
+在开始配置前，请确保以下条件已满足：
+1. **用友NCC白名单配置**：
+    - NCC后台配置文件已添加白名单配置
+    - 配置文件路径：`${HOME}/ierp/sf/nccssoConfig.xml`
+2. **数据库OAuth配置**：
+    - 用友NCC数据库中的`sm_oauth_security`表已插入必要数据
+    - 包含字段：`CLIENT_ID`, `CLIEN_NAME`, `CLIENT_SECURITY`, `PK_OAUTH_SECURITY`
+
+## 三、免登配置
+
+### 1\. 添加NCC应用
+
+在专属集成平台的应用中心搜索NCC并添加：
+
+![image.png](/images/单点登录-用友NCC/ea0daa65-e5db-46c7-b2b3-e2f920816e07.png)
+
+### 2\. 配置应用参数
+
+将NCC的配置信息填入专属集成平台：
+
+![image.png](/images/单点登录-用友NCC/f4c220fc-9147-4869-bfbb-d5774c7006c7.png)
+
+
+
+**配置项详细说明**：
+
+a. **数据源名称**：NCC系统管理后台创建的数据源名称
+
+b. **获取AccessToken的地址**：`http://${IP:PORT}/service/genThirdPartyAccessToken`
+- 示例：`http://ncc.bio-zdmc.com:9090/service/genThirdPartyAccessToken`
+
+c. **单点登录入口地址**：`http://${IP:PORT}/nccloud/resources/uap/rbac/thirdpartylogin/main/index.html`
+- 示例：`http://ncc.bio-zdmc.com:9090/nccloud/resources/uap/rbac/thirdpartylogin/main/index.html`
+
+d. **第三方系统编码**：数据库中插入的`CLIENT_ID`
+
+e. **密钥**：数据库中插入的`CLIENT_SECURITY`
+
+f. **Redirect URI**：`http://${IP:PORT}/nccloud`
+- 示例：`http://ncc.bio-zdmc.com:9090/nccloud`
+
+g. **多语语种**：`zh-cn`
+
+h. **账套编码**：NCC系统的系统编码，如下图所示
+
+i. **用户标识**：根据客户具体场景配置，需要与NCC的用户编码字段对应![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/54Lq3RWbQz9Bn7Ed/img/c523fc30-1f91-43d8-ae14-b6d8b817c486.png)
+
+
+
+## 四、测试验证
+
+配置完成后，通过浏览器访问"登录配置中的访问地址"，完成专属集成平台的认证流程，验证是否能成功登录到NCC系统界面：
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/54Lq3RWbQz9Bn7Ed/img/fe7f01c0-a793-42df-b55a-e6db12dfe7d9.png)
+
+## 附录
+
+### 1\. 用友NCC单点登录后台配置示例
+
+以下是NCC系统`nccssoConfig.xml`文件的配置示例（配置后需重启服务）：
+```
+
+
+  
+    200
+    
+      127.0.0.1
+      123.57.151.34
+    
+  
+  
+    200
+    
+      127.0.0.1
+    
+  
+
+```
+
+### 2\. 数据库配置示例
+
+在NCC系统数据库中执行的SQL示例：
+```
+INSERT INTO sm_oauth_security (CLIENT_ID, CLIEN_NAME, CLIENT_SECURITY, PK_OAUTH_SECURITY) 
+VALUES ('dingding', 'dingding', '1d07223b28fb44a6b290', '0001AA10000000008DDC');
+```
+> **注意**：配置中的IP:PORT、CLIENT*ID和CLIENT*SECURITY等信息需要根据实际环境进行替换。   
+
+## 常见问题
+1. **配置后无法登录**：
+    - 检查NCC白名单中是否包含专属集成平台的IP地址
+    - 验证CLIENT*ID和CLIENT*SECURITY配置是否正确
+    - 确认用户标识的映射关系是否准确
+2. **登录超时问题**：
+    - 检查NCC配置文件中的`regTimeOut`参数是否合理
+    - 确认网络连接稳定性
+3. **用户权限问题**：
+    - 确认NCC系统中用户是否已分配正确的权限
+    - 检查用户状态是否正常
+
+### 参考文档
+- 钉钉工作台触发单点登录参考文档：[钉钉工作台应用免登](https://alidocs.dingtalk.com/api/doc/transit?dentryUuid=7NkDwLng8Zqpd1vAuLq111PzJKMEvZBY&queryString=utm_medium%3Ddingdoc_doc_plugin_card%26utm_source%3Ddingdoc_doc)
+
+- IDP发起单点登录拼接地址参考文档：[单点登录（SSO）链接拼接指南]()
+

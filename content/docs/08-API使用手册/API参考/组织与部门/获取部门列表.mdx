@@ -1,0 +1,38 @@
+---
+title: "获取部门列表"
+description: "查询当前租户下的组/部门列表。"
+full: true
+api:
+  group: "组织与部门"
+  groupHref: "/docs/08-API使用手册/API参考/组织与部门/概览"
+  method: "GET"
+  path: "/iam/api/orgs"
+  auth: "Bearer Token"
+  summary: "通常作为组织架构联调的第一条验证接口。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备组织架构管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "组织与部门概览"
+      href: "/docs/08-API使用手册/API参考/组织与部门/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/orgs"
+      method: "get"
+---
+
+## 接口定位
+
+- 所属能力分组：组织与部门
+- 典型用途：通常作为组织架构联调的第一条验证接口。
+- 请求路径：`/iam/api/orgs`
+
+## 调用建议
+
+- 首次联调建议先调用该接口，确认 Token、权限和组织数据是否可读。
+- 如果你的场景只需要定位指定部门，再结合“过滤部门”或“获取部门详情”缩小范围。
+- 当返回结果为空时，优先确认当前租户是否已同步组织数据。

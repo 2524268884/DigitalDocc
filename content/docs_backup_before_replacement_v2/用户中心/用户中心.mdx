@@ -1,0 +1,117 @@
+---
+title: 用户中心
+description: 用户中心是专属集成平台的核心功能模块，提供用户全生命周期管理能力。通过用户中心，您可以管理企业用户账号、组织架构、角色权限以及用户属性，实现用户身份的统一管理与安全防护。
+---
+
+用户中心是专属集成平台的核心功能模块，提供用户全生命周期管理能力。通过用户中心，您可以管理企业用户账号、组织架构、角色权限以及用户属性，实现用户身份的统一管理与安全防护。
+> **功能概览**：用户中心整合了用户管理、组织架构、角色权限、身份安全等多个功能模块，形成完整的企业身份管理解决方案。   
+
+## 核心功能
+
+### 用户管理
+- **用户添加与导入** \- 支持手动创建用户和Excel批量导入两种方式在系统内添加用户
+- **用户信息管理** \- 查看和编辑用户详细信息，包括基础信息、扩展信息、组织信息与角色信息
+- **用户有效期管理** \- 设置账号使用期限，可配置到期提醒和提醒周期
+- **用户状态控制** \- 启用、禁用与删除用户，禁用后用户无法登录系统
+
+### 组织架构管理
+- **组织创建** \- 支持多级组织结构创建，可设置同级组织或下级组织
+- **组织编辑** \- 修改组织名称与描述信息
+- **组织删除** \- 支持级联删除功能，可一并删除下级组织及用户（需满足删除条件）
+- **组织移动** \- 通过拖拽或编辑方式调整组织在架构中的位置
+
+### 用户属性管理
+- **属性字段配置** \- 支持管理专属集成平台、企业认证源和通讯录集成三种类型的用户属性
+- **属性唯一性与必填设置** \- 可设置属性全局唯一性和必填规则
+- **属性编辑权限** \- 支持设置属性是否允许用户在服务台进行编辑
+- **属性映射** \- 支持专属集成平台属性与通讯录集成源以及企业认证源属性的映射关联
+
+### 角色管理
+- **角色应用管理** \- 管理角色所属应用，可自定义名称、Code及描述
+- **静态角色** \- 支持手动指定成员的静态角色，适用于固定人员分组
+- **动态角色** \- 基于用户属性或部门属性的动态匹配规则，自动计算角色成员
+- **角色黑名单** \- 支持在动态角色中设置黑名单，排除特定用户
+
+### 身份安全
+- **身份认证** \- 通过验证用户关键属性（如身份证号、工号等）确保登录者身份真实性
+- **多因子认证(MFA)** \- 支持短信验证码、邮箱验证码和动态令牌(TOTP)三种验证方式
+- **MFA规则配置** \- 可基于登录地理位置、新设备和非常规工作时间设置自适应MFA触发规则
+
+### 用户生命周期管理
+- **流程化用户管理** \- 支持用户创建审核功能，结合钉钉工作流实现用户创建和续期审批
+- **用户自助信息管理** \- 用户可在个人中心自主修改密码和管理个人信息，申请账号续期
+
+## 功能关系图
+
+用户中心的各功能模块紧密关联，共同构成完整的身份管理体系：
+- **用户是核心实体**：用户关联组织、角色和属性信息，是身份管理的核心
+- **组织提供层级结构**：为用户提供组织归属，反映企业部门结构
+- **角色实现权限分配**：通过静态分配和动态规则灵活管理用户权限
+- **属性定义用户特征**：支持基础属性和扩展属性，丰富用户画像
+- **身份安全保障访问**：通过身份认证和多因子验证构建多层防护体系
+- **生命周期管理确保合规**：通过流程化管理和自助服务规范用户全生命周期
+
+## 与其他模块的关系
+
+用户中心与其他模块紧密关联，形成完整的用户身份管理生态：
+
+### 认证源管理
+
+[认证源管理](https://alidocs.dingtalk.com/i/nodes/XPwkYGxZV3exqrnlT4PGLEL28AgozOKL?utm_scene=team_space)
+**提供用户认证和身份验证的接入方式：**
+- **多种认证方式**：支持钉钉、企业微信、飞书、AD、LDAP等多种企业认证源
+- **身份验证入口**：用户通过认证源登录系统，验证身份
+- **JIT用户创建**：首次认证的用户可通过属性映射自动创建到用户中心
+- **属性同步机制**：认证过程中的用户属性可以更新到用户中心
+
+### 通讯录集成
+
+[通讯录集成](https://alidocs.dingtalk.com/i/nodes/o14dA3GK8gKEq1api5NAwA0589ekBD76?utm_scene=team_space)
+**作为用户数据的上游提供者：**
+- **多源数据集成**：支持AD/LDAP、钉钉、飞书、企业微信等多种上游身份源
+- **组织架构映射**：将外部组织结构映射到用户中心的组织管理
+- **增量同步机制**：支持增量同步，减少系统资源消耗
+- **灵活的同步策略**：支持筛选规则和属性映射的精细配置
+
+### 通讯录同步
+
+[通讯录同步](https://alidocs.dingtalk.com/i/nodes/dpYLaezmVNqbp1nYuaj6EYeYWrMqPxX6?utm_scene=team_space)
+**作为用户数据的下游消费者：**
+- **丰富的下游应用**：支持将用户数据同步至AD、钉钉、企业微信等多种系统
+- **身份下游自动化**：支持基于连接流模板创建的身份下游自动化
+- **灵活的同步范围**：可自定义同步范围，精确控制数据分发
+- **数据映射转换**：支持Express Language处理能力，灵活处理数据转换
+
+### 其他关联模块
+- [权限中心](https://alidocs.dingtalk.com/i/nodes/Gl6Pm2Db8Dlp5Er2tg2M1dGx8xLq0Ee4?utm_scene=team_space)
+**：基于用户中心的角色配置管理员权限，实现细粒度权限控制**
+- [参数配置](https://alidocs.dingtalk.com/i/nodes/R1zknDm0WRq971bOurEEqELx8BQEx5rG?utm_scene=team_space)
+**：设置身份认证和MFA全局策略，影响用户登录安全策略**
+- [审计日志](https://alidocs.dingtalk.com/i/nodes/MNDoBb60VLlRL1a0tzQ6DgZ7VlemrZQ3?utm_scene=team_space)
+**：记录用户管理和身份验证相关的操作，提供安全审计**
+
+## 身份数据流转全景图
+
+平台构建了完整的企业身份数据流转体系，用户中心作为核心枢纽：
+- **数据流入**：通过认证源管理和通讯录集成将外部身份数据导入系统
+- **数据管理**：在用户中心进行统一管理和维护
+- **数据流出**：通过通讯录同步将数据分发到各业务系统
+- **全生命周期**：从用户创建、信息更新到账号停用的完整生命周期管理
+
+## 文档索引
+- [用户自助信息管理](https://alidocs.dingtalk.com/i/nodes/r1R7q3QmWeQEg1zkhx12GXnKWxkXOEP2?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 用户个人中心信息自主管理
+- [用户与组织架构管理](https://alidocs.dingtalk.com/i/nodes/m9bN7RYPWdqbD12NuQlgDZ49VZd1wyK0?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 企业组织层级结构管理
+- [属性管理](https://alidocs.dingtalk.com/i/nodes/YQBnd5ExVEl2nANztMBEdMj5WyeZqMmz?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+\- 用户字段与属性映射配置
+- [角色管理](https://alidocs.dingtalk.com/i/nodes/o14dA3GK8gKEq1api5mQxz2R89ekBD76?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 角色定义与权限分配
+- [身份验证](https://alidocs.dingtalk.com/i/nodes/7NkDwLng8Zqpd1vAuLbGa3PyJKMEvZBY?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 用户身份二次验证配置
+- [MFA认证](https://alidocs.dingtalk.com/i/nodes/amweZ92PV6lxKR0AtrY0a3MR8xEKBD6p?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 多因子认证方式与用户操作流程
+- [MFA规则配置](https://alidocs.dingtalk.com/i/nodes/14lgGw3P8vaE4k9OFj23Po3LJ5daZ90D?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 自适应多因子认证策略管理
+- [流程化用户管理](https://alidocs.dingtalk.com/i/nodes/14lgGw3P8vaE4k9OFj23v0K7J5daZ90D?doc_type=wiki_doc&utm_medium=dingdoc_doc_plugin_url&utm_scene=team_space&utm_source=dingdoc_doc)
+ \- 用户创建与续期审批流程

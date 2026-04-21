@@ -1,0 +1,490 @@
+---
+title: "单点登录-Exchange"
+description: "目标 : 通过 ADFS 为 Exchange OWA/EAC 提供基于声明的单点登录（SSO）。"
+---
+
+## 概览与适用范围
+
+- **目标**: 通过 ADFS 为 Exchange OWA/EAC 提供基于声明的单点登录（SSO）。
+- **影响范围**: OWA、EAC 登录流程将重定向至 ADFS；需同步更新信赖方与组织配置。
+- **前置条件**: ADFS/Exchange 已可用，时间同步，公网/内网 DNS 与 HTTPS 证书有效。
+
+## 架构与认证链路
+
+- **认证链路（目标）**: 专属集成平台（SAML IdP） → ADFS（作为中介/信赖方与声明发起） → Exchange（OWA/EAC，作为 Relying Party） → 完成 SSO。
+- **流转说明**:
+    - 外网入口：用户访问网关映射的外网域名 → 跳转 专属集成平台 登录 → 专属集成平台 向 ADFS 发起 SAML → ADFS 向 Exchange 颁发令牌 → 用户进入 OWA/EAC。
+    - 内网入口：用户访问内网域名 →（方案待定，见下节）保持原有表单或使用 ADFS 页面。
+
+## 执行顺序
+
+### 步骤 0：前置检查与基线快照
+- **变更前建议**: 记录当前 `Get-OrganizationConfig` 关键项（Adfs\*）与 OWA/ECP 访问状态，便于回滚。
+- **服务健康**: 确认 ADFS 服务运行状态与证书有效期；确认 Exchange 服务器时间与域控同步。
+
+### 步骤 1：确认 ADFS 服务状态（需为 Running）
+```text
+Get-Service adfssrv | Select-Object Name, Status
+```
+
+### 步骤 2：创建 OWA 和 EAC 信赖方信任
+
+### 1）创建OWA信赖方信任**
+
+<ImageZoom
+src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-01.png"
+alt="image.png"
+width={1200}
+height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-02.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-03.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-04.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-05.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-06.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-07.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-08.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-09.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+命令添加：
+```text
+Add-AdfsRelyingPartyTrust -Name "Outlook On The Web" `
+  -Notes "Trust for OWA via ADFS" `
+  -MetadataUrl "https://mail.digitalsee.co/FederationMetadata/2007-06/FederationMetadata.xml" `
+  -IssuanceAuthorizationRules '@RuleTemplate = "AllowAllAuthzRule" => issue(Type = "http://schemas.microsoft.com/authorization/claims/permit", Value = "true");' `
+  -IssueOAuthRefreshTokensTo NoDevice
+```
+
+### 2）创建EAC信赖方信任**
+
+<ImageZoom
+src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-10.png"
+alt="image.png"
+width={1200}
+height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-11.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-12.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+命令添加：
+```text
+Add-AdfsRelyingPartyTrust -Name "Exchange Admin Center" `
+  -Notes "Trust for EAC via ADFS" `
+  -MetadataUrl "https://mail.digitalsee.co/FederationMetadata/2007-06/FederationMetadata.xml" `
+  -IssuanceAuthorizationRules '@RuleTemplate = "AllowAllAuthzRule" => issue(Type = "http://schemas.microsoft.com/authorization/claims/permit", Value = "true");' `
+  -IssueOAuthRefreshTokensTo NoDevice
+```
+
+### 步骤 3：添加 专属集成平台 声明提供方信任
+
+请求idaas的metadata文件，保存在本地；访问idaas管理后台，登录成功后“应用中心-应用管理-saml应用-单点配置”中可以看到metadata文件的链接地址；
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/1298eda2-9402-42c6-9310-5eac990b0437.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-13.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+打开ADFS管理控制台 → 声明提供方信任，将metadata文件导入
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-14.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-15.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+### 步骤 4：配置 ADFS 声明规则
+
+ 1)为OWA配置UPN和SID声明
+```text
+Set-AdfsRelyingPartyTrust -TargetName "Outlook On The Web" -
+  IssuanceTransformRules '@RuleName = "ActiveDirectoryUserSID" c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"] => issue(store = "Active Directory", types = ("http://schemas.microsoft.com/ws/2008/06/identity/claims/primarysid"), query = ";objectSID;{0}", param = c.Value); @RuleName = "ActiveDirectoryUPN" c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"] => issue(store = "Active Directory", types = ("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"), query = ";userPrincipalName;{0}", param = c.Value);'
+```
+
+ 为EAC配置相同UPN和SID声明
+```text
+Set-AdfsRelyingPartyTrust -TargetName "Exchange Admin Center" -
+  IssuanceTransformRules '@RuleName = "ActiveDirectoryUserSID" c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"] => issue(store = "Active Directory", types = ("http://schemas.microsoft.com/ws/2008/06/identity/claims/primarysid"), query = ";objectSID;{0}", param = c.Value); @RuleName = "ActiveDirectoryUPN" c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"] => issue(store = "Active Directory", types = ("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"), query = ";userPrincipalName;{0}", param = c.Value);'
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-16.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+名称：ActiveDirectoryUPN
+
+类型：自定义规则
+
+自定义规则：
+```text
+c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"]
+ => issue(store = "Active Directory", types = ("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"), query = ";userPrincipalName;{0}", param = c.Value);
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-17.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+名称：ActiveDirectoryUserSID
+
+类型：自定义规则
+
+自定义规则：
+```text
+c:[Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname", Issuer == "AD AUTHORITY"]
+ => issue(store = "Active Directory", types = ("http://schemas.microsoft.com/ws/2008/06/identity/claims/primarysid"), query = ";objectSID;{0}", param = c.Value);
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-18.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-19.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+名称：Pass Through or Filter an Incoming Claim
+
+类型：转换传入声明
+
+传入：upn   传出：upn
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-20.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+3)为专属集成平台声明规则
+
+名称：Map nameidentifier to upn
+
+类型：自定义规则
+
+自定义规则：
+```text
+c:[Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", Properties["http://schemas.xmlsoap.org/ws/2005/05/identity/claimproperties/format"] == "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"]
+ => issue(Type = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn", Issuer = c.Issuer, OriginalIssuer = c.OriginalIssuer, Value = c.Value, ValueType = c.ValueType);
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-21.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+名称：Map email to upn
+
+类型：自定义规则
+
+自定义规则：
+```text
+c:[Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email"]
+ => issue(Type = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn", Issuer = c.Issuer, OriginalIssuer = c.OriginalIssuer, Value = c.Value, ValueType = c.ValueType);
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-22.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+### 步骤 5：证书准备与导入
+
+### 导出签名证书
+
+打开 ADFS 管理控制台 → 服务 → 证书 → 找到 “Token-Signing” 证书（自签名） 右键 “查看证书” → 详细信息 → 复制到文件 → 选择 “Base-64 编码 X.509” → 保存为ADFSTokenSigning.cer
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-23.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-24.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-25.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+### 2（可选）生成证书
+
+ 在ADFS服务器上生成新的Token-Signing和Token-Decrypting证书：
+```text
+ # 生成Token-Signing证书
+ $signCert = New-SelfSignedCertificate -Subject "CN=ADFS Signing - ad09.digitalsee.co" -CertStoreLocation "Cert:\LocalMachine\My" -KeyUsage DigitalSignature -KeyAlgorithm RSA -KeyLength 2048
+
+ # 生成Token-Decrypting证书
+ $decCert = New-SelfSignedCertificate -Subject "CN=ADFS Encryption - ad09.digitalsee.co" -CertStoreLocation "Cert:\LocalMachine\My" -KeyUsage KeyEncipherment -KeyAlgorithm RSA -KeyLength 2048
+ ```
+```text
+
+\# 导出PFX证书
+```
+$signPwd = Read-Host "设置PFX密码" -AsSecureString
+Export-PfxCertificate -Cert $signCert -FilePath C:\temp\adfs-token-signing.pfx -Password $signPwd -Force
+
+$decPwd = Read-Host "设置PFX密码" -AsSecureString
+Export-PfxCertificate -Cert $decCert -FilePath C:\temp\adfs-token-decrypting.pfx -Password $decPwd -Force
+
+### 导入到 Exchange
+
+### 导出证书到Exchange服务器
+
+cer格式：证书导入到根证书存储
+```powershell
+Import-Certificate -FilePath "C:\Temp\ADFSTokenSigning.cer" -CertStoreLocation "Cert:\LocalMachine\Root"
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-26.png"
+  alt="单点登录-Exchange截图"
+  width={1200}
+  height={720}
+/>
+
+PFX格式：在Exchange服务器导入证书
+```powershell
+$signPwd = Read-Host "输入PFX密码" -AsSecureString
+Import-PfxCertificate -FilePath C:\temp\adfs-token-signing.pfx -CertStoreLocation Cert:\LocalMachine\My -Password $signPwd
+
+$decPwd = Read-Host "输入PFX密码" -AsSecureString
+Import-PfxCertificate -FilePath C:\temp\adfs-token-decrypting.pfx -CertStoreLocation Cert:\LocalMachine\My -Password $decPwd
+```
+
+### 验证指纹（替换为实际指纹）
+```powershell
+Get-ChildItem "Cert:\LocalMachine\Root" | Where-Object { $_.Thumbprint -eq "11DCC57D14D93734366917B78A03DC9712D0369F" }
+```
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-27.png"
+  alt="单点登录-Exchange截图"
+  width={1200}
+  height={720}
+/>
+
+### 步骤 6：内外网双入口策略
+
+[Exchange-双入口配置指南](/docs/03-应用中心/应用单点登录/Exchange-双入口配置指南)
+
+### 步骤 7：绑定 ADFS 信息（替换为实际参数）
+
+Set-OrganizationConfig -AdfsIssuer "https://adfs.digitalsee.co/adfs/ls/" \`  # ADFS登录端点
+-AdfsAudienceUris @("https://mail.digitalsee.co/owa/", "https://mail.digitalsee.co/ecp/") \`  # 匹配ADFS信赖方标识符
+-AdfsSignCertificateThumbprint "11DCC57D14D93734366917B78A03DC9712D0369F"  # 令牌签名证书指纹
+
+示例：
+```
+Set-OrganizationConfig -AdfsIssuer "https://ad09.digitalsee.co/adfs/ls/" `
+-AdfsAudienceUris @("https://mail01.digitalsee.co/owa/", "https://mail01.digitalsee.co/ecp/") `
+-AdfsSignCertificateThumbprint "9A3463D65F4B5396B830431BB5794A844BDB680A"
+```text
+
+### 步骤 8：配置 OWA/EAC 虚拟目录启用 ADFS 身份验证
+
+方法1：
+
+:::
+Set-OrganizationConfig -AdfsAuthentication  \$true
+:::
+
+假设出现了以下报错 ：
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/976c7dc3-d95a-41be-b37f-3bff22dff09d.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+先确定ADFS的指纹证书和导入的证书指纹是否一致，参考 导出证书到Exchange服务器 ；如果一致可以使用XML配置启用ADFS认证
+
+方法2: 使用XML配置方式启用ADFS认证
+```
+$adfsConfig = @"
+<service>
+  <federatedAuthentication>
+    <wsFederation passiveRedirectEnabled="true"
+                  issuer="https://ad09.digitalsee.co/adfs/ls/"
+                  realm="https://fakerealm/"
+                  requireHttps="true" />
+    <cookieHandler requireSsl="true" path="/" />
+  </federatedAuthentication>
+  <certificateValidation certificateValidationMode="PeerOrChainTrust" />
+  <audienceUris>
+    <add value="https://mail01.digitalsee.co/owa/" />
+    <add value="https://mail01.digitalsee.co/ecp/" />
+  </audienceUris>
+  <issuerNameRegistry type="Microsoft.IdentityModel.Tokens.ConfigurationBasedIssuerNameRegistry, Microsoft.IdentityModel, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+    <trustedIssuers>
+      <add thumbprint="9a3463d65f4b5396b830431bb5794a844bdb680a" name="Adfs" />
+    </trustedIssuers>
+  </issuerNameRegistry>
+</service>
+"@
+Set-OrganizationConfig -AdfsAuthenticationConfiguration $adfsConfig
+```text
+
+\# 📝 XML 参数修改说明：
+
+\# 1. issuer="[https://ad09.digitalsee.co/adfs/ls/](https://ad09.digitalsee.co/adfs/ls/)"
+
+\#    → 修改为你的 ADFS 服务器地址
+
+\# 2. audienceUris 中的 value → 修改为你的 Exchange OWA 和 ECP 地址
+
+\# 3. thumbprint="FCE17065EFAA24615DCB51C04E8DFC91CDB03DD0" → 修改为你的 ADFS Token-Signing 证书指纹
+
+\# 4. realm="[https://fakerealm/](https://fakerealm/)"
+
+\#    → 保持此值不变，这是固定值
+
+验证配置：
+
+Get-OrganizationConfig \| Select-Object AdfsAuthentication,AdfsIssuer,AdfsAudienceUris,AdfsSignCertificateThumbprints,AdfsEncryptCertificateThumbprint \| Format-List (Get-OrganizationConfig).AdfsAuthenticationConfiguration
+
+<ImageZoom
+  src="/images/03-应用中心/应用单点登录/单点登录-Exchange/remote-28.png"
+  alt="单点登录-Exchange截图"
+  width={1200}
+  height={720}
+/>
+
+**#重启邮箱服务**
+
+**iisreset**
+
+### 回滚与恢复
+- **禁用 ADFS 身份验证**:
+
+Set-OrganizationConfig -AdfsAuthentication \$false
+- **清空 ADFS 相关组织配置（如需完整回退）**:
+
+Set-OrganizationConfig -AdfsIssuer \$null
+Set-OrganizationConfig -AdfsAudienceUris @()
+Set-OrganizationConfig -AdfsSignCertificateThumbprints @()
+
+```
+- **重启 IIS 服务**: 执行 `iisreset`，验证 OWA/ECP 恢复至原有身份验证流程。
+
+## 常见问题与排查
+
+- **症状**: 启用后出现 500/跳转循环或“签名证书指纹不匹配”。
+    - **检查1**: `Get-OrganizationConfig` 中指纹是否与 ADFS Token-Signing 证书一致；证书是否导入至正确存储。
+    - **检查2**: ADFS 信赖方标识符是否与 `-AdfsAudienceUris` 完全一致（含末尾斜杠）。
+    - **检查3**: 时间同步与证书有效期；浏览器缓存与 Cookie。
+    - **应对**: 可按文档中的 XML 方式设置 `AdfsAuthenticationConfiguration` 强制写入配置后 `iisreset`。
+
+### 验证结果
+- 访问 https://mail01.digitalsee.co/owa/ 成功跳转到ADFS登录页面
+- 可以看到IDaaS SAML Provider选项
+- Exchange与ADFS集成完成
+
+## 相关文档
+
+<Cards>
+  <Card title="单点登录-阿里云" href="/docs/03-应用中心/应用单点登录/单点登录-阿里云" />
+  <Card title="单点登录-阿里云控制台(RAM)" href="/docs/03-应用中心/应用单点登录/单点登录-阿里云控制台(RAM)" />
+  <Card title="单点登录-钉钉SSO" href="/docs/03-应用中心/应用单点登录/单点登录-钉钉SSO" />
+</Cards>

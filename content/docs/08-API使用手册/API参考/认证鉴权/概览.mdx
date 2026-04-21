@@ -1,0 +1,46 @@
+---
+title: "认证鉴权接口"
+description: "获取 access_token，并为后续 Bearer Token 调用做准备。"
+---
+
+## 这组接口适合做什么
+
+首次接入、联调前准备、Token 刷新策略确认。
+
+<Callout>
+本组共收录 **2** 个接口操作，推荐先阅读下面的调用顺序，再进入具体接口页。
+</Callout>
+
+## 推荐调用顺序
+
+<Steps>
+  <Step>
+
+准备应用的 client_id 与 client_secret。
+
+  </Step>
+  <Step>
+
+优先调用请求体方式的 Token 接口获取 access_token。
+
+  </Step>
+  <Step>
+
+将 access_token 写入后续业务接口的 Authorization 头。
+
+  </Step>
+</Steps>
+
+## 高频接口
+
+<Cards>
+  <Card title="获取 access_token（请求体方式）" href="/docs/08-API使用手册/API参考/认证鉴权/获取access-token-请求体方式" />
+  <Card title="获取 access_token（Basic 认证方式）" href="/docs/08-API使用手册/API参考/认证鉴权/获取access-token-basic认证方式" />
+</Cards>
+
+## 全部接口
+
+| 接口 | 方法 | 路径 | 说明 |
+| --- | --- | --- | --- |
+| [获取 access_token（请求体方式）](/docs/08-API使用手册/API参考/认证鉴权/获取access-token-请求体方式) | `POST` | `/iam/token` | 推荐作为默认的 Token 获取方式。 |
+| [获取 access_token（Basic 认证方式）](/docs/08-API使用手册/API参考/认证鉴权/获取access-token-basic认证方式) | `POST` | `/iam/token/basic` | 适合已接入标准 OAuth2 客户端认证方式的系统。 |

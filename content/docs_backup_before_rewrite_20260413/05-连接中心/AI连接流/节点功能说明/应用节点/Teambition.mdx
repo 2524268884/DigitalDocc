@@ -1,0 +1,175 @@
+---
+title: "Teambition"
+description: "支持将文件上传到Teambition项目中。通过配置Teambition API参数，可以实现自动化文件管理和项目协作。"
+---
+## 概述
+
+支持将文件上传到Teambition项目中。通过配置Teambition API参数，可以实现自动化文件管理和项目协作。
+
+## 功能特性
+- **文件上传**：支持从URL下载文件并上传到Teambition
+- **项目集成**：将文件关联到指定的Teambition项目
+- **多格式支持**：支持各种文件类型的上传
+- **权限控制**：基于租户和操作员的权限验证
+- **自动清理**：上传完成后自动清理本地临时文件
+
+## 支持的操作类型
+
+### UPLOAD\_File - 文件上传
+
+将指定URL的文件下载并上传到Teambition项目中。
+
+## 配置参数
+
+### TeambitionAction
+
+#### 文件配置
+- **type**：操作类型（目前支持UPLOAD\_File）
+- **fileUrl**：源文件URL
+- **fileType**：文件类型（如pdf、docx、jpg等）
+- **fileName**：上传后的文件名（可选，默认使用UUID）
+
+#### 项目配置
+- **projectId**：Teambition项目ID
+- **parentId**：父文件夹ID（可选）
+- **scope**：文件范围
+- **category**：文件分类
+
+#### 认证配置
+- **tenantId**：租户ID
+- **operatorId**：操作员ID
+
+## 使用方法
+
+### 文件上传到项目
+```
+{
+  "type": "UPLOAD_File",
+  "fileUrl": "https://example.com/document.pdf",
+  "fileType": "pdf",
+  "fileName": "项目报告.pdf",
+  "projectId": "5f8d2c1e4b5a3f9d",
+  "parentId": "5f8d2c1e4b5a3f9e",
+  "scope": "project",
+  "category": "document",
+  "tenantId": "tenant_001",
+  "operatorId": "user_123"
+}
+```
+
+## 执行逻辑
+
+### 文件上传流程
+1. **文件下载**：从fileUrl下载文件到本地临时目录
+2. **Token获取**：调用Teambition API获取上传token
+3. **OSS上传**：使用获取的token将文件上传到阿里云OSS
+4. **文件创建**：在Teambition项目中创建工作文件记录
+5. **清理工作**：删除本地临时文件
+
+### 认证流程
+1. 获取Teambition配置信息
+2. 进行OAuth认证
+3. 设置请求头（Authorization、X-Tenant-Id等）
+4. 发送API请求
+
+## 输出结果
+
+### 成功上传结果
+```
+{
+  "code": 200,
+  "result": {
+    "id": "file_123456",
+    "name": "项目报告.pdf",
+    "size": 1024000,
+    "type": "pdf",
+    "url": "https://teambition.com/file/123456"
+  },
+  "file_token": "upload_token_abc123"
+}
+```
+
+### 错误结果
+```
+{
+  "errCode": "UPLOAD_FAILED",
+  "message": "文件上传失败：网络超时"
+}
+```
+
+## 高级功能
+
+### 批量文件上传
+
+通过循环节点实现多个文件上传：
+```
+Loop (遍历文件列表)
+├── TeambitionAction (上传单个文件)
+└── VarAction (收集上传结果)
+```
+
+### 文件分类管理
+
+根据文件类型自动分类：
+```
+{
+  "fileType": "pdf",
+  "category": "document",
+  "autoClassify": true
+}
+```
+
+### 权限验证
+
+支持多租户权限控制：
+```
+{
+  "tenantId": "${currentTenant}",
+  "operatorId": "${currentUser}",
+  "permissionCheck": true
+}
+```
+
+## 最佳实践
+
+### 1\. 文件管理
+- 使用有意义的filename
+- 合理设置文件分类
+- 定期清理过期文件
+
+### 2\. 错误处理
+- 检查文件URL可访问性
+- 处理网络超时情况
+- 实现重试机制
+
+### 3\. 性能调优
+- 控制并发上传数量
+- 选择合适的文件大小
+- 监控上传耗时
+
+### 4\. 权限配置
+- 使用正确的tenantId和operatorId
+- 验证用户权限
+- 记录操作日志
+
+## 常见问题
+
+### Q: 支持哪些文件格式？
+
+**A:** 支持所有常见的文件格式，包括文档（PDF、DOC、XLS）、图片（JPG、PNG）、压缩文件（ZIP）等。系统会自动检测文件类型。
+
+### Q: 文件大小有限制吗？
+
+**A:** 默认最大文件大小为100MB，可通过配置调整。建议对于超大文件考虑分块上传。
+
+### Q: 如何处理上传失败？
+
+**A:** 系统会自动重试失败的上传（默认3次）。如果仍然失败，会记录详细错误信息并返回错误响应。
+
+### Q: 支持文件夹上传吗？
+
+**A:** 目前只支持单文件上传。如需上传整个文件夹，可通过循环节点逐个上传文件。
+
+### Q: 如何获取projectId？
+
+**A:** projectId需要在Teambition系统中创建项目后获取。可以通过Teambition API查询项目列表或在Web界面查看项目ID。

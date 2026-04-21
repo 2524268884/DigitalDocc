@@ -1,0 +1,126 @@
+---
+title: "登录页CSS自定义页面样式"
+description: "如想对登录页面，进行CSS自定义样式修改，可在“品牌设置 登录页面设置”，“登录页设置”的表单内容中，开启“自定义页面样式”。在代码编辑器中，输入CSS样式，进行修改。"
+---
+
+## 概述
+
+如想对登录页面，进行CSS自定义样式修改，可在“品牌设置-登录页面设置”，“登录页设置”的表单内容中，开启“自定义页面样式”。在代码编辑器中，输入CSS样式，进行修改。
+
+<ImageZoom
+  src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/b74fb5ff-7673-4d28-a62a-e6596f9948fb.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+例如想要修改标题字体颜色，可在代码编辑器中输入
+```text
+.digitalsee-login-header-lead {
+  color: blue;
+}
+```
+
+左侧的预览效果，即可实时响应修改结果
+
+<ImageZoom
+  src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/eede2174-d2b7-4636-82b6-a7ebb1ad7100.png"
+  alt="image.png"
+  width={1200}
+  height={720}
+/>
+
+目前开放的，可修改的页面样式如下
+
+| 区域样式名 | 对应修改区域 |
+|---------------|------------------|
+| /\* 容器 \*/
+.digitalsee-box-container \{
+\} |
+
+<ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/5b592c84-574a-46b3-96f0-272a97132d3b.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 头部容器 \*/
+.digitalsee-login-header \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/44978096-bb89-4caf-b4ac-657338e55458.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* Logo \*/
+.digitalsee-login-header-logo \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/d8718d76-b26f-4739-af3f-9d5db8f11440.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 标题容器 \*/
+.digitalsee-login-header-title \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/04985e63-fcf4-4a5f-b2df-61b7c046cdb2.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 标题 \*/
+.digitalsee-login-header-lead \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/b64a2e21-4054-46ff-a4b8-0c9fa09ec615.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 隐私策略 \*/
+.digitalsee-policy-text-container \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/caa2449f-fd64-4bfe-a4c3-581a994266d2.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 登录按钮 \*/
+.digitalsee-login-button \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/03a82491-82ae-49ff-a82e-c6383ade3e00.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 忘记密码 \*/
+.digitalsee-forget \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/28613fec-26d5-4540-9cd0-4c853363fcf2.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 记住密码 \*/
+.digitalsee-remember \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/18a7916c-4d9e-4c76-bba5-48f4138677e8.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+| /\* 其他登录方式容器 \*/
+.digitalsee-other-login-methods-box \{
+\} | <ImageZoom
+src="/images/06-参数配置/平台设置/登录页CSS自定义页面样式/71f1f946-f064-4415-b373-31d065c76f30.png"
+alt="image.png"
+width={1200}
+height={720}
+/> |
+
+## 相关文档
+
+<Cards>
+  <Card title="登录页面配置" href="/docs/06-参数配置/平台设置/登录页面配置" />
+  <Card title="平台设置" href="/docs/06-参数配置/平台设置/平台设置" />
+  <Card title="CSS定制页面内容：样式修改指南及故障排除" href="/docs/06-参数配置/平台设置/CSS定制页面内容：样式修改指南及故障排除" />
+</Cards>

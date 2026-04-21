@@ -1,0 +1,213 @@
+---
+title: "Webhook触发器使用手册"
+description: "Webhook触发器是AI 连接流流程的外部调用入口，支持通过HTTP请求触发流程执行。它提供了灵活的参数传递和执行控制机制，适用于外部系统集成、API回调等场景。"
+---
+
+## 概述
+
+Webhook触发器是AI 连接流流程的外部调用入口，支持通过HTTP请求触发流程执行。它提供了灵活的参数传递和执行控制机制，适用于外部系统集成、API回调等场景。
+
+## 功能特性
+
+- **HTTP请求触发**：通过POST/GET等HTTP方法触发流程
+- **参数传递**：支持JSON格式的参数传递给流程
+- **执行模式**：支持同步和异步两种执行模式
+- **安全控制**：IP白名单限制访问来源
+- **状态反馈**：提供执行结果和错误信息
+
+## 配置参数
+
+### hookUrl
+- **类型**：String
+- **描述**：Webhook的回调URL，由系统自动生成
+- **示例**：`https://api.example.com/webhook/flow-123`
+
+### type
+- **类型**：String
+- **描述**：执行方式，支持"同步"和"异步"
+- **默认值**：异步
+
+### value
+- **类型**：Object
+- **描述**：输入参数，支持JSON对象或数组
+- **示例**：
+
+    ```json
+    \{"userId": "12345","action": "create","data": \{"name": "example"\}\}
+    ```
+
+### ipList
+- **类型**：String
+- **描述**：IP白名单，逗号分隔的IP地址列表
+- **示例**：`192.168.1.1,10.0.0.1/24`
+
+## 使用方法
+
+### 配置Webhook触发器
+
+在StartEvent节点中选择Webhook作为触发器类型，系统会自动生成唯一的hookUrl。
+
+### 调用Webhook
+
+使用HTTP客户端调用生成的URL：
+```text
+curl -X POST https://api.example.com/webhook/flow-123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "异步",
+    "value": {
+      "param1": "value1",
+      "param2": "value2"
+    },
+    "ipList": "192.168.1.100"
+  }'
+
+curl -X POST https://api.example.com/webhook/flow-123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "同步",
+    "value": {
+      "input": "test data"
+    }
+  }'
+```
+
+### 处理响应
+
+### 异步模式响应
+```text
+{
+  "requestId": "req_123456789",
+  "status": "accepted",
+  "message": "请求已接受，正在后台处理"
+}
+```
+
+### 同步模式响应
+```text
+{
+  "requestId": "req_123456789",
+  "status": "completed",
+  "result": {
+    "output": "处理结果",
+    "statusCode": 200
+  }
+}
+```
+
+## 执行逻辑
+
+### 同步执行流程
+1. 接收HTTP请求
+2. 验证IP白名单
+3. 解析请求参数
+4. 执行流程直到完成
+5. 返回执行结果
+
+### 异步执行流程
+1. 接收HTTP请求
+2. 验证IP白名单
+3. 解析请求参数
+4. 生成requestId并返回
+5. 后台异步执行流程
+6. 可通过API查询执行状态
+
+## 安全特性
+
+### IP白名单验证
+- 如果配置了ipList，只有白名单内的IP才能触发流程
+- 支持单个IP和CIDR网段格式
+- 未配置白名单时允许所有IP访问
+
+### 请求频率限制
+- 系统内置频率限制，防止恶意调用
+- 超频请求会被拒绝并记录日志
+
+## 错误处理
+
+### 常见错误码
+- `400 Bad Request`：请求参数格式错误
+- `403 Forbidden`：IP不在白名单内
+- `429 Too Many Requests`：请求频率超限
+- `500 Internal Server Error`：服务器内部错误
+
+### 错误响应格式
+```text
+{
+  "error": {
+    "code": "INVALID_IP",
+    "message": "IP地址不在白名单内",
+    "details": "请求IP: 192.168.1.200"
+  }
+}
+```
+
+## 最佳实践
+
+### 使用HTTPS
+
+在生产环境中确保Webhook URL使用HTTPS协议，确保数据传输安全。
+
+### 配置IP白名单
+
+始终配置IP白名单，只允许信任的服务器访问。
+
+### 错误处理
+
+在调用方实现重试机制和错误处理逻辑。
+
+### 参数验证
+
+在流程开始处添加参数验证，确保输入数据符合预期格式。监控和日志
+
+### 执行日志
+- 每次Webhook调用都会记录详细日志
+- 包含请求参数、执行时间、结果等信息
+- 可在系统日志界面查看
+
+### 性能监控
+- 响应时间统计
+- 成功率监控
+- 错误率告警
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q: 如何获取requestId用于查询异步结果？">
+**A:** 异步调用时，系统会立即返回包含requestId的响应。您可以使用此ID调用查询API获取最新执行状态。
+</Accordion>
+<Accordion title="Q: IP白名单支持哪些格式？">
+**A:** 支持单个IP（如192.168.1.1）和CIDR网段（如10.0.0.0/24）。多个地址用逗号分隔。
+</Accordion>
+<Accordion title="Q: 同步调用超时时间是多少？">
+**A:** 同步调用的默认超时时间为5分钟。如果流程执行时间超过此限制，会返回超时错误。
+</Accordion>
+</Accordions>
+
+## AI Webhook与传统连接流Webhook对比
+
+AI连接流的Webhook触发器与连接中心的Webhook存在以下差异：
+
+| 特性 | AI连接流Webhook | 连接流Webhook |
+|------|----------------|--------------|
+| **触发方式** | POST请求 | POST请求 |
+| **默认执行模式** | 异步 | 同步 |
+| **参数格式** | JSON（type/value/ipList） | JSON（直接参数） |
+| **IP白名单** | 支持 | 支持 |
+| **频率限制** | 有 | 有 |
+
+**主要区别说明**：
+
+1. **执行模式默认值不同**：AI连接流默认异步执行，连接流默认同步执行
+2. **参数结构不同**：AI连接流的Webhook使用嵌套的`type`和`value`结构，连接流使用扁平化参数结构
+3. **适用场景**：AI连接流适用于需要AI处理、长流程或后台处理的场景；连接流适用于快速同步响应场景
+
+如需了解传统连接流的Webhook配置，请参考连接中心相关文档。
+
+## 相关文档
+
+<Cards>
+  <Card title="变量节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/变量节点" />
+  <Card title="存储子节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/存储子节点" />
+  <Card title="返回变量" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/返回变量" />
+</Cards>

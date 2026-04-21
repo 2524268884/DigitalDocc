@@ -1,0 +1,323 @@
+---
+title: "HTTP 请求"
+description: "HTTP请求处理器，用于执行各种HTTP API调用。通过配置请求参数，可以实现RESTful API的完整交互，支持GET、POST、PUT、DELETE等方法，以及复杂的参数传递和响应处理。"
+---
+
+## 概述
+
+HTTP请求处理器，用于执行各种HTTP API调用。通过配置请求参数，可以实现RESTful API的完整交互，支持GET、POST、PUT、DELETE等方法，以及复杂的参数传递和响应处理。
+
+## 功能特性
+
+- **多种HTTP方法**：支持GET、POST、PUT、DELETE、PATCH等标准HTTP方法
+- **灵活参数配置**：支持Path、Query、Header、Body等多种参数类型
+- **认证集成**：支持OAuth、Basic Auth等认证方式
+- **响应处理**：自动解析JSON/XML响应，支持自定义成功判断
+- **代理支持**：支持HTTP代理和虚拟IP
+- **编码处理**：支持UTF-8、GBK等多种字符编码
+
+## 配置参数
+
+### HttpAction
+
+### 基础配置
+- **httpMethod**：HTTP方法（GET/POST/PUT/DELETE/PATCH）
+- **endpoint**：API端点URL
+- **contentType**：内容类型（如application/json）
+- **responseType**：响应类型（JSON/XML/TEXT）
+- **encoding**：响应编码（UTF8/GBK）
+
+### 认证配置
+- **accountId**：账号ID（用于缓存）
+- **authProtocol**：认证协议类型
+- **account**：认证账号信息
+
+### 代理配置
+- **proxyIp**：代理IP地址
+
+### 参数配置
+- **path**：路径参数（Map\<String, Object\>）
+- **query**：查询参数（Map\<String, Object\>）
+- **header**：请求头（Map\<String, Object\>）
+- **body**：请求体（Object）
+
+### 成功判断
+- **successCondition**：成功条件列表
+- **successExp**：成功表达式（JavaScript）
+
+## 使用方法
+
+### 基本GET请求
+```text
+{
+  "httpMethod": "GET",
+  "endpoint": "https://api.example.com/users",
+  "responseType": "JSON",
+  "query": {
+    "page": 1,
+    "size": 10
+  },
+  "header": {
+    "Authorization": "Bearer ${token}"
+  }
+}
+```
+
+### POST请求提交数据
+```text
+{
+  "httpMethod": "POST",
+  "endpoint": "https://api.example.com/users",
+  "contentType": "application/json",
+  "body": {
+    "name": "张三",
+    "email": "zhangsan@example.com",
+    "age": 25
+  },
+  "successCondition": [
+    {
+      "field": "code",
+      "operator": "eq",
+      "value": 200
+    }
+  ]
+}
+```
+
+### 带路径参数的请求
+```text
+{
+  "httpMethod": "GET",
+  "endpoint": "https://api.example.com/users/{userId}/profile",
+  "path": {
+    "userId": "${user.id}"
+  }
+}
+```
+
+### 文件上传请求
+```text
+{
+  "httpMethod": "POST",
+  "endpoint": "https://api.example.com/upload",
+  "contentType": "multipart/form-data",
+  "body": {
+    "file": "${fileData}",
+    "metadata": {
+      "name": "document.pdf",
+      "type": "pdf"
+    }
+  }
+}
+```
+
+### 带认证的请求
+```text
+{
+  "httpMethod": "GET",
+  "endpoint": "https://api.example.com/secure-data",
+  "accountId": "oauth_account_001",
+  "authProtocol": "OAUTH2",
+  "account": {
+    "clientId": "client_123",
+    "clientSecret": "secret_456",
+    "tokenUrl": "https://auth.example.com/token"
+  }
+}
+```
+
+## 执行逻辑
+
+### 参数构建
+1. 从节点上下文解析配置参数
+2. 构建HttpAction对象
+3. 设置代理IP和认证信息
+
+### 请求执行
+1. 组装请求头（自动添加Content-Type）
+2. 处理路径参数替换
+3. 准备查询参数和请求体
+4. 调用认证服务执行HTTP请求
+
+### 响应处理
+1. 解析HTTP响应
+2. 转换为HttpOutput格式
+3. 检查成功条件
+4. 设置节点执行状态
+
+## 成功判断机制
+
+### 条件判断
+
+通过successCondition配置判断请求是否成功：
+```text
+{
+  "successCondition": [
+    {
+      "field": "statusCode",
+      "operator": "eq",
+      "value": 200
+    },
+    {
+      "field": "body.success",
+      "operator": "eq",
+      "value": true
+    }
+  ]
+}
+```
+
+### 表达式判断
+
+通过successExp使用JavaScript表达式判断：
+```text
+{
+  "successExp": "response.body.code === 0 && response.statusCode < 300"
+}
+```
+
+## 响应输出
+
+### HttpOutput结构
+```text
+{
+  "httpStatus": 200,
+  "header": {
+    "content-type": "application/json",
+    "server": "nginx"
+  },
+  "body": {
+    "code": 0,
+    "message": "success",
+    "data": {...}
+  }
+}
+```
+
+### 输出变量
+- **httpStatus**：HTTP状态码
+- **header**：响应头对象
+- **body**：响应体内容
+
+## 高级功能
+
+### 动态参数替换
+
+支持使用变量进行参数替换：
+```text
+{
+  "endpoint": "https://api.example.com/users/${userId}",
+  "query": {
+    "token": "${authToken}",
+    "timestamp": "${currentTime}"
+  }
+}
+```
+
+### 批量请求
+
+结合循环节点实现批量API调用：
+```text
+Loop (遍历用户列表)
+├── HttpAction (调用用户API)
+└── VarAction (收集结果)
+```
+
+### 错误重试
+
+配置重试策略处理临时失败：
+```text
+{
+  "retryConfig": {
+    "maxRetries": 3,
+    "retryDelay": 1000,
+    "retryConditions": ["500", "502", "503"]
+  }
+}
+```
+
+### 响应缓存
+
+启用响应缓存提高性能：
+```text
+{
+  "cacheConfig": {
+    "enabled": true,
+    "ttl": 300,
+    "key": "${endpoint}_${query}"
+  }
+}
+```
+
+## 性能优化
+
+### 连接池管理
+- HTTP连接复用
+- 连接超时配置
+- 最大连接数限制
+
+### 并发控制
+- 请求频率限制
+- 并发请求控制
+- 队列管理
+
+## 最佳实践
+
+### 请求配置
+- 使用合适的HTTP方法
+- 设置正确的Content-Type
+- 配置合理的超时时间
+
+### 错误处理
+- 实现完善的成功判断逻辑
+- 处理各种HTTP错误码
+- 配置适当的重试策略
+
+### 安全考虑
+- 使用HTTPS协议
+- 妥善处理敏感信息
+- 验证SSL证书
+
+### 性能调优
+- 启用连接复用
+- 使用合适的并发数
+- 监控请求耗时
+
+## 调试和监控
+
+### 请求日志
+- 记录完整的请求参数
+- 输出响应状态和内容
+- 记录执行耗时
+
+### 性能指标
+- 请求成功率
+- 平均响应时间
+- 错误分布统计
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q: 如何处理不同格式的响应？">
+**A:** 通过responseType参数指定响应格式：
+- JSON：自动解析为对象
+- XML：解析为XML文档
+- TEXT：作为字符串处理
+</Accordion>
+<Accordion title="Q: 支持哪些认证方式？">
+**A:** 支持多种认证方式：
+- Basic Auth
+- Bearer Token
+- OAuth 2.0
+- API Key
+- 自定义认证
+</Accordion>
+</Accordions>
+
+## 相关文档
+
+<Cards>
+  <Card title="变量节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/变量节点" />
+  <Card title="存储子节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/存储子节点" />
+  <Card title="返回变量" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/返回变量" />
+</Cards>

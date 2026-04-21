@@ -1,0 +1,67 @@
+---
+title: "API 快速开始"
+description: "用最短路径完成首次联调：获取 Token，并调用第一条受保护接口。"
+---
+
+## 你需要准备什么
+
+- 应用的 `client_id`
+- 应用的 `client_secret`
+- 当前部署环境的访问域名
+
+<Callout>
+如果你只想验证联调链路，建议先按“获取 Token -> 查询用户”完成第一次调用。
+</Callout>
+
+## 三步完成首次调用
+
+<Steps>
+  <Step>
+
+### 第一步：获取 access_token
+
+优先使用请求体方式获取 Token，后续业务接口统一复用该 Token。
+
+  </Step>
+  <Step>
+
+### 第二步：拼接业务接口地址
+
+将环境域名与接口路径拼接，例如 `/iam/api/users`、`/iam/api/orgs`。
+
+  </Step>
+  <Step>
+
+### 第三步：携带 Authorization 头调用业务接口
+
+对需要鉴权的接口统一添加 `Authorization: Bearer <access_token>` 请求头。
+
+  </Step>
+</Steps>
+
+## 示例 1：获取 Token
+
+<APIPage
+  document={"./api/idaas-api.json"}
+  operations={[{ path: "/iam/token", method: "post" }]}
+  webhooks={[]}
+  hasHead={false}
+/>
+
+## 示例 2：验证用户查询接口
+
+<APIPage
+  document={"./api/idaas-api.json"}
+  operations={[{ path: "/iam/api/users", method: "get" }]}
+  webhooks={[]}
+  hasHead={false}
+/>
+
+## 下一步去哪里
+
+<Cards>
+  <Card title="认证与请求规范" href="/docs/08-API使用手册/认证与请求规范" />
+  <Card title="获取 Token 接口" href="/docs/08-API使用手册/API参考/认证鉴权/获取access-token-请求体方式" />
+  <Card title="查询用户接口" href="/docs/08-API使用手册/API参考/用户管理/查询用户" />
+  <Card title="获取部门列表接口" href="/docs/08-API使用手册/API参考/组织与部门/获取部门列表" />
+</Cards>

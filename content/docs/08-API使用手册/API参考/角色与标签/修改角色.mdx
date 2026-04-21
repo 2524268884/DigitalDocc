@@ -1,0 +1,32 @@
+---
+title: "修改角色"
+description: "修改角色定义。"
+full: true
+api:
+  group: "角色与标签"
+  groupHref: "/docs/08-API使用手册/API参考/角色与标签/概览"
+  method: "PUT"
+  path: "/iam/api/tags/{id}"
+  auth: "Bearer Token"
+  summary: "适合调整角色名称、属性和配置。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备角色管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "角色与标签概览"
+      href: "/docs/08-API使用手册/API参考/角色与标签/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/tags/{id}"
+      method: "put"
+---
+
+## 接口定位
+
+- 所属能力分组：角色与标签
+- 典型用途：适合调整角色名称、属性和配置。
+- 请求路径：`/iam/api/tags/{id}`

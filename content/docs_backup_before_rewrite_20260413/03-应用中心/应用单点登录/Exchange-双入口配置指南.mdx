@@ -1,0 +1,169 @@
+---
+title: "设置 ADFS 发行者（Issuer）"
+description: "- 内网入口：访问 Exchange OWA/ECP，保留表单认证（FBA）。"
+---
+## Exchange 双入口（内网FBA / 外网 SAML-ADFS）配置指南
+
+### 适用场景
+- 内网入口：访问 Exchange OWA/ECP，保留表单认证（FBA）。
+- 外网入口：经钉钉网关访问，跳转 专属集成平台 → ADFS → Exchange，完成 SAML 登录。
+- 单服务器（如 `MAIL01`）上通过“两个 IIS 站点 \+ 两套虚拟目录”实现内外分流。
+
+### 目标拓扑与域名
+- 外网入口：`https://mail01.digitalsee.co/owa`（经钉钉网关对外发布，走 SAML/ADFS）
+- 内网入口：`http://mail-internal.digitalsee.co/owa`（直连 Exchange，FBA）
+- 可后续把内网入口升级为 HTTPS（绑定证书即可）。
+
+### 前置检查
+
+1) Exchange 与 ADFS 健康：
+```
+Get-ExchangeServer | ft Name,AdminDisplayVersion
+Get-Service adfssrv | Select Name,Status
+```
+
+2) 现有 OWA/ECP 与组织级 ADFS 配置快照（回滚用）：
+```
+Get-OwaVirtualDirectory | Select Identity,InternalUrl,ExternalUrl,AdfsAuthentication,FormsAuthentication,WindowsAuthentication | ft
+Get-EcpVirtualDirectory | Select Identity,InternalUrl,ExternalUrl,AdfsAuthentication,FormsAuthentication,WindowsAuthentication | ft
+Get-OrganizationConfig | Select AdfsIssuer,AdfsAudienceUris,AdfsSignCertificateThumbprints | fl
+```
+
+### 步骤一：规划并配置内外 DNS
+- 外网入口：`mail01.digitalsee.co` → 钉钉网关公网地址（已有）
+- 内网入口：`mail-internal.digitalsee.co` → `MAIL01` 内网 IP
+
+临时在服务器本机追加 hosts（测试用）：
+```
+Add-Content $env:SystemRoot\System32\drivers\etc\hosts "`r`n192.168.50.101`tmail-internal.digitalsee.co"
+ipconfig /flushdns
+```
+
+正式在内网 DNS 服务器添加 A 记录：
+```
+Add-DnsServerResourceRecordA -Name "mail-internal" -ZoneName "digitalsee.co" -IPv4Address 192.168.50.101 -CreatePtr
+```
+
+### 步骤二：SPN（服务主体名称）
+
+确保 `MAIL01` 计算机帐户包含内网入口所需的 HTTP SPN：
+```
+setspn -S HTTP/mail-internal.digitalsee.co MAIL01$
+:: 如需确认
+setspn -L MAIL01$
+```
+
+说明：外网入口当前正常，无需额外变更。
+
+### 步骤三：创建内网专用站点与虚拟目录（OWA/ECP）
+
+1) 在 IIS 管理器中创建站点（或使用 appcmd）：
+```
+%windir%\system32\inetsrv\appcmd add site /name:"OWA-Internal" /bindings:http/*:80:mail-internal.digitalsee.co /physicalPath:"C:\\inetpub\\wwwroot"
+```
+
+2) 使用 Exchange 管理 Shell 创建“被 Exchange 识别”的虚拟目录：
+```
+New-OwaVirtualDirectory -WebSiteName "OWA-Internal" -InternalUrl http://mail-internal.digitalsee.co/owa -ExternalUrl http://mail-internal.digitalsee.co/owa
+New-EcpVirtualDirectory -WebSiteName "OWA-Internal" -InternalUrl http://mail-internal.digitalsee.co/ecp -ExternalUrl http://mail-internal.digitalsee.co/ecp
+```
+
+注意：如果之前在 IIS 手工建过 `owa/ecp`，需先删除再由上述命令创建，否则 `Get-OwaVirtualDirectory` 查不到。
+
+### 步骤四：分别设置两套入口的认证方式
+
+内网入口（OWA-Internal）使用 FBA：
+```
+Set-OwaVirtualDirectory -Identity "MAIL01\owa (OWA-Internal)" -AdfsAuthentication:$false -FormsAuthentication:$true -WindowsAuthentication:$true -BasicAuthentication:$false
+Set-EcpVirtualDirectory -Identity "MAIL01\ecp (OWA-Internal)" -AdfsAuthentication:$false -FormsAuthentication:$true -WindowsAuthentication:$false -BasicAuthentication:$false
+```
+
+外网入口（Default Web Site）仅使用 ADFS（避免与 Forms 混用）：
+```
+Set-OwaVirtualDirectory -Identity "MAIL01\owa (Default Web Site)" -AdfsAuthentication:$true -FormsAuthentication:$false -WindowsAuthentication:$false -BasicAuthentication:$false
+Set-EcpVirtualDirectory -Identity "MAIL01\ecp (Default Web Site)" -AdfsAuthentication:$true -FormsAuthentication:$false -WindowsAuthentication:$false -BasicAuthentication:$false
+```
+
+应用生效：
+```
+net stop was /y
+net start w3svc
+```
+
+### 步骤五：配置 Exchange 组织级 ADFS 参数
+```powershell
+
+Set-OrganizationConfig -AdfsIssuer "https://ad09.digitalsee.co/adfs/ls/"
+
+# 设置受众 URI（Audience）
+Set-OrganizationConfig -AdfsAudienceUris @(
+  "https://mail01.digitalsee.co/owa/", "https://mail01.digitalsee.co/owa",
+  "https://mail01.digitalsee.co/ecp/", "https://mail01.digitalsee.co/ecp"
+)
+
+# 设置 ADFS 签名证书指纹（从 ADFS 服务器获取）
+$adfsCert = Get-AdfsCertificate -CertificateType "Token-Signing"
+Set-OrganizationConfig -AdfsSignCertificateThumbprints $adfsCert.Thumbprint
+```
+
+
+
+### ADFS 受众 URI（如新增外网或内网域名时）
+
+若需要把新的服务域名纳入受众（Audience）：
+```
+Set-OrganizationConfig -AdfsAudienceUris @(
+  "https://mail01.digitalsee.co/owa/", "https://mail01.digitalsee.co/owa",
+  "https://mail01.digitalsee.co/ecp/", "https://mail01.digitalsee.co/ecp",
+  "https://mail.digitalsee.co/owa/",  "https://mail.digitalsee.co/owa",   # 如使用外网独立域名
+  "https://mail.digitalsee.co/ecp/",  "https://mail.digitalsee.co/ecp"
+)
+```
+
+同时在 ADFS 的信赖方中确保存在对应标识符（Identifier/Audience）。
+
+### 步骤六：验证
+
+1) 配置结果核对：
+```
+Get-OwaVirtualDirectory | Select Identity,InternalUrl,AdfsAuthentication,FormsAuthentication,WindowsAuthentication | ft
+Get-EcpVirtualDirectory | Select Identity,InternalUrl,AdfsAuthentication,FormsAuthentication,WindowsAuthentication | ft
+```
+
+2) 访问验证：
+```
+# 内网入口应返回 302 到 /owa/auth/logon.aspx（表单）
+Invoke-WebRequest http://mail-internal.digitalsee.co/owa/ -UseBasicParsing -MaximumRedirection 0
+
+# 外网入口应 302 到 ADFS/IDaaS 登录页
+Invoke-WebRequest https://mail01.digitalsee.co/owa/ -UseBasicParsing -MaximumRedirection 0
+```
+
+### 常见问题
+- 在 IIS 手工创建的 `owa/ecp` 目录 Exchange 不识别，需用 Exchange 命令 `New-OwaVirtualDirectory/ New-EcpVirtualDirectory` 创建。
+- `Get-Website` 等 IIS 命令报找不到提供程序：请在“Windows PowerShell（管理员）”下安装并导入 `WebAdministration`，或使用 `appcmd`。
+- DNS 未解析导致访问失败：先用 hosts 临时验证，再落地到内网 DNS。
+- 同时启用 ADFS 与 Forms 可能引起体验混淆，外网建议仅保留 ADFS。
+
+### 回滚与恢复
+
+1) 恢复单入口（仅 Default Web Site）：
+```
+Remove-OwaVirtualDirectory -Identity "MAIL01\\owa (OWA-Internal)"
+Remove-EcpVirtualDirectory -Identity "MAIL01\\ecp (OWA-Internal)"
+%windir%\system32\inetsrv\appcmd delete site "OWA-Internal"
+net stop was /y; net start w3svc
+```
+
+2) 恢复原认证（示例：默认站点恢复 FBA）：
+```
+Set-OwaVirtualDirectory -Identity "MAIL01\owa (Default Web Site)" -AdfsAuthentication:$false -FormsAuthentication:$true -WindowsAuthentication:$false
+Set-EcpVirtualDirectory -Identity "MAIL01\ecp (Default Web Site)" -AdfsAuthentication:$false -FormsAuthentication:$true -WindowsAuthentication:$false
+net stop was /y; net start w3svc
+```
+
+---
+
+本文档依据现场对话最终落地：
+- 外网入口 `mail01.digitalsee.co` 经钉钉网关走 专属集成平台 \+ ADFS。
+- 内网入口 `mail-internal.digitalsee.co` 直连 Exchange，呈现 FBA 表单。

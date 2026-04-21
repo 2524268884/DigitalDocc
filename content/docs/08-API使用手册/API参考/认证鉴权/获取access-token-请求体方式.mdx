@@ -1,0 +1,41 @@
+---
+title: "获取 access_token（请求体方式）"
+description: "使用 client_id 和 client_secret 通过请求体换取 access_token。"
+full: true
+api:
+  group: "认证鉴权"
+  groupHref: "/docs/08-API使用手册/API参考/认证鉴权/概览"
+  method: "POST"
+  path: "/iam/token"
+  auth: "无需 Bearer Token"
+  summary: "推荐作为默认的 Token 获取方式。"
+  prerequisites:
+    - "准备好 client_id 与 client_secret"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "认证鉴权概览"
+      href: "/docs/08-API使用手册/API参考/认证鉴权/概览"
+_openapi:
+  operations:
+    - path: "/iam/token"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：认证鉴权
+- 典型用途：推荐作为默认的 Token 获取方式。
+- 请求路径：`/iam/token`
+
+## 调用建议
+
+- 推荐把这个接口作为默认的 Token 获取方式。
+- 返回的 `access_token` 建议按实际过期时间缓存，并在失效前刷新。
+- 如果联调阶段频繁返回 401，先重新获取新的 Token 再重试业务接口。
+
+<Callout>
+如果你的调用方本身采用标准 OAuth2 Basic 认证客户端形态，可改用“获取 access_token（Basic 认证方式）”。
+</Callout>

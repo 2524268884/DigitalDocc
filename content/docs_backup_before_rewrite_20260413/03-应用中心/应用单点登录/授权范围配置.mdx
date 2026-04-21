@@ -1,0 +1,157 @@
+---
+title: "应用授权范围配置"
+description: "本文档介绍OAuth2、OIDC、SAML等认证协议中授权范围（Scope/Claims）的配置方法，帮助您理解并正确配置各协议的授权范围参数。"
+---
+## 概述
+
+本文档介绍OAuth2、OIDC、SAML等认证协议中授权范围（Scope/Claims）的配置方法，帮助您理解并正确配置各协议的授权范围参数。
+
+## 授权范围概念
+
+授权范围定义了应用程序请求访问的用户信息范围。正确配置授权范围是确保应用获得必要权限同时保护用户隐私的关键。
+
+## OAuth2.0授权范围
+
+### 常用授权范围
+
+| 范围值 | 说明 | 敏感级别 |
+|--------|------|---------|
+| `openid` | 启用OpenID Connect认证 | 低 |
+| `profile` | 访问用户的基本资料信息（姓名、头像等） | 低 |
+| `email` | 访问用户的邮箱地址 | 中 |
+| `address` | 访问用户的地址信息 | 中 |
+| `phone` | 访问用户的电话号码 | 高 |
+| `offline_access` | 获取刷新令牌，支持后台刷新访问 | 高 |
+
+### 推荐授权范围组合
+
+| 应用场景 | 推荐授权范围 | 说明 |
+|---------|-------------|------|
+| 基础登录 | `openid profile` | 仅获取基本身份信息 |
+| 标准Web应用 | `openid profile email` | 包含邮箱，适合大多数应用 |
+| 需要手机号 | `openid profile phone` | 获取用户手机号 |
+| 完整信息 | `openid profile email address phone offline_access` | 获取所有可用信息 |
+| 仅认证 | `openid` | 仅验证用户身份，不获取额外信息 |
+
+### 配置示例
+
+```json
+{
+  "scopes": {
+    "default": ["openid", "profile", "email"],
+    "optional": ["address", "phone", "offline_access"]
+  }
+}
+```
+
+## OIDC授权范围
+
+### 标准Claims
+
+| Claim | 类型 | 说明 |
+|-------|------|------|
+| `sub` | string | 用户唯一标识符（Subject） |
+| `name` | string | 用户全名 |
+| `given_name` | string | 用户名字 |
+| `family_name` | string | 用户姓氏 |
+| `middle_name` | string | 用户中间名 |
+| `nickname` | string | 用户昵称 |
+| `preferred_username` | string | 用户首选用户名 |
+| `email` | string | 用户邮箱 |
+| `email_verified` | boolean | 邮箱是否已验证 |
+| `picture` | string | 用户头像URL |
+| `website` | string | 用户网站 |
+| `gender` | string | 用户性别 |
+| `birthdate` | string | 用户生日 |
+| `zoneinfo` | string | 用户时区 |
+| `locale` | string | 用户语言区域 |
+| `phone_number` | string | 用户电话号码 |
+| `phone_number_verified` | boolean | 电话是否已验证 |
+| `address` | object | 用户地址信息 |
+| `updated_at` | number | 信息最后更新时间 |
+
+### 自定义Claims
+
+除标准Claims外，还可以配置自定义Claims来传递业务特定信息：
+
+```json
+{
+  "claims": {
+    "id_token": ["sub", "name", "email", "custom_role"],
+    "userinfo": ["name", "email", "department", "position"]
+  }
+}
+```
+
+## SAML授权范围
+
+### SAML属性映射
+
+| SAML属性 | 说明 | OIDC对应 |
+|----------|------|---------|
+| `NameID` | 用户唯一标识 | `sub` |
+| `email` | 用户邮箱 | `email` |
+| `displayName` | 显示名称 | `name` |
+| `givenName` | 名字 | `given_name` |
+| `surname` | 姓氏 | `family_name` |
+| `group` | 用户组 | `groups` |
+| `role` | 用户角色 | `roles` |
+
+### SAML属性配置示例
+
+```xml
+
+  
+    user@example.com
+  
+  
+    张三
+  
+  
+    admin
+    users
+  
+
+```
+
+## CAS协议授权范围
+
+### CAS属性映射
+
+| CAS属性 | 说明 |
+|---------|------|
+| `user` | 用户名 |
+| `displayName` | 显示名称 |
+| `email` | 邮箱 |
+| `affiliation` | 所属组织 |
+
+## 最佳实践
+
+### 1. 最小权限原则
+
+仅请求应用必需的授权范围，避免过度请求用户数据。
+
+### 2. 敏感数据处理
+
+- 高敏感度授权范围（如`offline_access`、`phone`）应谨慎授予
+- 确保用户了解并同意授权范围的使用目的
+
+### 3. 定期审查
+
+定期审查应用的授权范围配置，确保与实际需求一致。
+
+### 4. 协议选择指南
+
+| 场景 | 推荐协议 |
+|------|---------|
+| 现代Web应用 | OIDC |
+| 传统企业应用 | SAML |
+| API授权 | OAuth2 |
+| 单点登录 | CAS |
+
+## 相关文档
+
+- 单点登录-OIDC
+- 单点登录-OAuth2
+- 单点登录-SAML协议
+- 单点登录-CAS协议

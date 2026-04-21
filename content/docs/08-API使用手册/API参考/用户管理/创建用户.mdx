@@ -1,0 +1,38 @@
+---
+title: "创建用户"
+description: "在当前租户下创建用户。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "POST"
+  path: "/iam/api/users"
+  auth: "Bearer Token"
+  summary: "适合主数据同步、新用户开户和初始化导入。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/users"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：适合主数据同步、新用户开户和初始化导入。
+- 请求路径：`/iam/api/users`
+
+## 调用建议
+
+- 创建前建议先调用“查询用户”确认账号是否已存在。
+- 如果接口返回参数错误，优先核对必填字段和字段格式。
+- 创建成功后，可通过“获取用户详情”或“查询用户”立即校验结果。

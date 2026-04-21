@@ -1,0 +1,38 @@
+---
+title: "创建部门"
+description: "在当前租户下创建新的组/部门。"
+full: true
+api:
+  group: "组织与部门"
+  groupHref: "/docs/08-API使用手册/API参考/组织与部门/概览"
+  method: "POST"
+  path: "/iam/api/orgs"
+  auth: "Bearer Token"
+  summary: "用于组织初始化或从外部系统同步新部门。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备组织架构管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "组织与部门概览"
+      href: "/docs/08-API使用手册/API参考/组织与部门/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/orgs"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：组织与部门
+- 典型用途：用于组织初始化或从外部系统同步新部门。
+- 请求路径：`/iam/api/orgs`
+
+## 调用建议
+
+- 创建前建议先调用“获取部门列表”或“过滤部门”，避免重复创建。
+- 如果需要维护上下级关系，请先确认父部门标识在平台内已经存在。
+- 创建成功后，可再调用“获取部门详情”做结果校验。

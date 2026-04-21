@@ -6,7 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docs:audit": "node scripts/audit-docs.mjs",
+    "docs:generate-api": "node scripts/generate-api-docs.mjs",
+    "docs:rewrite-source": "node scripts/rewrite-docs-from-source.mjs",
+    "images:report": "node scripts/manage-doc-images.mjs report",
+    "images:archive:dry-run": "node scripts/manage-doc-images.mjs archive",
+    "images:archive": "node scripts/manage-doc-images.mjs archive --write",
+    "images:insert:dry-run": "node scripts/manage-doc-images.mjs insert",
+    "images:insert": "node scripts/manage-doc-images.mjs insert --write",
+    "images:ingest:dry-run": "node scripts/manage-doc-images.mjs ingest",
+    "images:ingest": "node scripts/manage-doc-images.mjs ingest --write --move",
+    "images:render:dry-run": "node scripts/manage-doc-images.mjs render",
+    "images:render": "node scripts/manage-doc-images.mjs render --write"
   },
   "dependencies": {
     "clsx": "latest",

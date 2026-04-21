@@ -1,0 +1,47 @@
+---
+title: "认证与请求规范"
+description: "说明域名拼接、Token 使用方式、请求头和路径参数等通用约定。"
+---
+
+## Base URL 约定
+
+当前 OpenAPI 定义中未声明固定 `servers`，实际调用时请使用你所在环境的站点域名作为根地址，例如：
+
+```text
+https://{your-domain}
+```
+
+## 鉴权方式
+
+### 1. Bearer Token
+
+组织、用户、角色等大部分业务接口默认使用 Bearer Token：
+
+```http
+Authorization: Bearer <access_token>
+```
+
+### 2. 路径中的 apiKey
+
+数据连接与事件通知接口使用路径参数中的 `apiKey` 完成入口鉴权，请重点保护该值，不要暴露在前端代码中。
+
+## 内容类型
+
+- 获取 Token 接口通常使用 `application/x-www-form-urlencoded`。
+- 业务接口通常使用 `application/json`。
+- 具体请求体字段、参数结构和响应体以对应接口页为准。
+
+## 请求组织建议
+
+- 先获取 Token，再调用受保护接口。
+- 先查询，再创建或修改，能显著降低重复写入和误删风险。
+- 对带路径参数的接口，先核对 `org_id`、`tenantId`、`connectorId`、`apiKey` 等值是否属于当前环境。
+
+## 推荐入口
+
+<Cards>
+  <Card title="获取 Token（请求体方式）" href="/docs/08-API使用手册/API参考/认证鉴权/获取access-token-请求体方式" />
+  <Card title="获取 Token（Basic 认证方式）" href="/docs/08-API使用手册/API参考/认证鉴权/获取access-token-basic认证方式" />
+  <Card title="连接器事件通知" href="/docs/08-API使用手册/API参考/事件通知/连接器事件通知" />
+  <Card title="Webhook 启动连接流" href="/docs/08-API使用手册/API参考/数据连接/Webhook启动连接流" />
+</Cards>

@@ -1,0 +1,32 @@
+---
+title: "删除角色"
+description: "删除指定角色。"
+full: true
+api:
+  group: "角色与标签"
+  groupHref: "/docs/08-API使用手册/API参考/角色与标签/概览"
+  method: "DELETE"
+  path: "/iam/api/tags/{id}"
+  auth: "Bearer Token"
+  summary: "删除前建议先确认角色是否仍被用户引用。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备角色管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "角色与标签概览"
+      href: "/docs/08-API使用手册/API参考/角色与标签/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/tags/{id}"
+      method: "delete"
+---
+
+## 接口定位
+
+- 所属能力分组：角色与标签
+- 典型用途：删除前建议先确认角色是否仍被用户引用。
+- 请求路径：`/iam/api/tags/{id}`

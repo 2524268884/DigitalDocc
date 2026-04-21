@@ -1,0 +1,32 @@
+---
+title: "启用或禁用用户"
+description: "启用或禁用指定用户。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "PUT"
+  path: "/iam/api/users/status"
+  auth: "Bearer Token"
+  summary: "适合账号冻结、恢复和批量状态治理场景。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/users/status"
+      method: "put"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：适合账号冻结、恢复和批量状态治理场景。
+- 请求路径：`/iam/api/users/status`

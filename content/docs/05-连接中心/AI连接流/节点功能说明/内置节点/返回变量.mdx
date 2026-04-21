@@ -1,0 +1,223 @@
+---
+title: "返回变量"
+description: "返回变了节点，用于自定义流程的返回值并结束流程执行。通过JavaScript表达式计算返回值，支持设置流程的最终状态（成功或失败），适用于需要返回特定数据或控制流程结束状态的场景。"
+---
+
+## 概述
+
+返回变了节点，用于自定义流程的返回值并结束流程执行。通过JavaScript表达式计算返回值，支持设置流程的最终状态（成功或失败），适用于需要返回特定数据或控制流程结束状态的场景。
+
+## 功能特性
+
+- **自定义返回值**：通过JavaScript表达式计算返回值
+- **流程状态控制**：可设置流程最终状态为成功或失败
+- **数据格式控制**：支持JSON格式输出
+- **流程终止**：执行后立即结束整个流程
+- **表达式支持**：支持复杂的JavaScript表达式计算
+
+## 配置参数
+
+### ReturnVarAction
+
+### 基础配置
+- **returnValue**：返回值JavaScript表达式（必需）
+- **flowResult**：流程结果状态（SUCCESS/FAILED）
+- **toJson**：是否转换为JSON格式（默认true）
+
+## 使用方法
+
+### 返回成功结果
+```text
+{
+  "returnValue": "${result}",
+  "flowResult": "SUCCESS",
+  "toJson": true
+}
+```
+
+### 返回失败结果
+```text
+{
+  "returnValue": "{\"error\": \"操作失败\", \"code\": 500}",
+  "flowResult": "FAILED",
+  "toJson": true
+}
+```
+
+### 返回复杂对象
+```text
+{
+  "returnValue": "{\"user\": ${user}, \"timestamp\": ${currentTime}, \"status\": \"completed\"}",
+  "flowResult": "SUCCESS",
+  "toJson": true
+}
+```
+
+### 返回原始数据
+```text
+{
+  "returnValue": "${apiResponse}",
+  "flowResult": "SUCCESS",
+  "toJson": false
+}
+```
+
+### 条件返回值
+```text
+{
+  "returnValue": "${success} ? {\"status\": \"ok\", \"data\": ${result}} : {\"status\": \"error\", \"message\": \"处理失败\"}",
+  "flowResult": "${success ? 'SUCCESS' : 'FAILED'}",
+  "toJson": true
+}
+```
+
+### 内置变量
+- **流程上下文变量**：所有通过VarAction设置的变量
+- **节点输出变量**：各节点的输出结果
+- **系统变量**：时间戳、请求ID等
+
+## 执行逻辑
+
+### 参数验证
+1. 检查returnValue表达式是否为空
+2. 验证flowResult是否为有效状态
+3. 准备JavaScript执行环境
+
+### 表达式计算
+1. 解析JavaScript表达式
+2. 替换变量引用
+3. 执行表达式计算
+4. 获取计算结果
+
+### 流程结束
+1. 设置节点输出结果
+2. 标记流程为结束状态
+3. 根据flowResult设置流程成功/失败状态
+4. 终止流程执行
+
+## 输出结果
+
+### JSON格式输出（toJson=true）
+```text
+{
+  "output_type": "END_CUSTOM",
+  "value": {
+    "status": "success",
+    "data": "返回值内容"
+  }
+}
+```
+
+### 原始格式输出（toJson=false）
+```text
+{
+  "output_type": "END_CUSTOM",
+  "value": "原始返回值"
+}
+```
+
+## 应用场景
+
+### API响应返回
+```text
+HttpAction (调用API)
+├── Condition (检查响应)
+│   ├── ReturnAction (成功返回)
+│   └── ReturnAction (失败返回)
+```
+
+### 数据处理结果返回
+```text
+Loop (处理数据)
+├── DataProcess (处理单条)
+└── ReturnAction (返回处理结果)
+```
+
+### 错误处理返回
+```text
+TryCatch (异常捕获)
+├── ReturnAction (正常返回)
+└── ReturnAction (错误返回)
+```
+
+### 分支结果汇总
+```text
+Parallel (并行处理)
+├── Branch1
+├── Branch2
+└── ReturnAction (汇总返回)
+```
+
+## 高级功能
+
+### 动态表达式
+
+支持运行时动态构造返回值表达式：
+```text
+{
+  "returnValue": "${template.replace('${placeholder}', ${actualValue})}",
+  "flowResult": "SUCCESS"
+}
+```
+
+### 条件返回值
+
+使用三元运算符实现条件返回值：
+```text
+{
+  "returnValue": "${status === 'success' ? {code: 200, data: ${result}} : {code: 500, error: ${errorMsg}}}",
+  "flowResult": "${status === 'success' ? 'SUCCESS' : 'FAILED'}"
+}
+```
+
+### 数据格式化
+
+在返回值中进行数据格式化：
+```text
+{
+  "returnValue": "{\"total\": ${count}, \"items\": ${list}, \"timestamp\": \"${new Date().toISOString()}\"}",
+  "flowResult": "SUCCESS"
+}
+```
+
+## 最佳实践
+
+### 表达式设计
+- 使用有意义的变量名
+- 验证表达式语法正确性
+- 避免过于复杂的嵌套表达式
+
+### 返回值设计
+- 保持返回值结构的一致性
+- 包含必要的状态信息
+- 控制返回值的大小
+
+### 流程状态设置
+- 正确设置flowResult状态
+- 根据业务逻辑判断成功/失败
+- 提供详细的错误信息
+
+### 错误处理
+- 检查表达式执行异常
+- 处理变量不存在的情况
+- 验证返回值格式
+
+## 调试和监控
+
+### 执行日志
+- 记录表达式计算过程
+- 输出返回值内容
+- 记录流程结束状态
+
+### 性能指标
+- 表达式计算耗时
+- 返回值大小统计
+- 流程成功率监控
+
+## 相关文档
+
+<Cards>
+  <Card title="变量节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/变量节点" />
+  <Card title="存储子节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/存储子节点" />
+  <Card title="分支节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/分支节点" />
+</Cards>

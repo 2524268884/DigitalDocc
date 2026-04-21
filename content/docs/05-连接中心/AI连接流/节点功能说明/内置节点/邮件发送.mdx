@@ -1,0 +1,321 @@
+---
+title: "邮件发送"
+description: "EmailActionHandler 是AI 连接流中的邮件发送处理器，支持发送文本和HTML格式的邮件，包括附件功能。通过配置SMTP服务器参数，可以实现自动化邮件通知、报表发送、告警提醒等业务场景。"
+---
+
+## 概述
+
+EmailActionHandler 是AI 连接流中的邮件发送处理器，支持发送文本和HTML格式的邮件，包括附件功能。通过配置SMTP服务器参数，可以实现自动化邮件通知、报表发送、告警提醒等业务场景。
+
+## 功能特性
+
+- **多格式支持**：支持文本和HTML格式邮件
+- **附件功能**：支持多个文件附件
+- **抄送功能**：支持多个抄送收件人
+- **SMTP认证**：支持SSL/TLS加密连接
+- **错误处理**：详细的邮件发送错误诊断
+- **模板支持**：支持动态内容替换
+
+## 配置参数
+
+### EmailAction
+
+### 账号配置
+- **accountId**：邮箱账号ID
+- **account**：SMTP服务器配置（包含host、port、username、password等）
+
+### 邮件内容
+- **from**：发件人邮箱地址
+- **to**：收件人邮箱地址（多个用逗号分隔）
+- **cc**：抄送人邮箱地址（多个用逗号分隔）
+- **subject**：邮件主题
+- **body**：邮件正文内容
+- **bodyFormat**：正文格式（true为HTML，false为文本）
+- **attachmentUrl**：附件URL（多个用逗号分隔）
+
+## 使用方法
+
+### 发送文本邮件
+```text
+{
+  "accountId": "email_account_001",
+  "from": "sender@example.com",
+  "to": "recipient@example.com",
+  "subject": "系统通知",
+  "body": "这是一封测试邮件",
+  "bodyFormat": false
+}
+```
+
+### 发送HTML邮件
+```text
+{
+  "accountId": "email_account_001",
+  "from": "sender@example.com",
+  "to": "recipient@example.com",
+  "subject": "HTML报告",
+  "body": "<h1>报告标题</h1>
+报告内容...
+",
+  "bodyFormat": true
+}
+```
+
+### 带抄送的邮件
+```text
+{
+  "accountId": "email_account_001",
+  "from": "sender@example.com",
+  "to": "recipient@example.com",
+  "cc": "cc1@example.com,cc2@example.com",
+  "subject": "重要通知",
+  "body": "请注意查看附件",
+  "bodyFormat": false
+}
+```
+
+### 带附件的邮件
+```text
+{
+  "accountId": "email_account_001",
+  "from": "sender@example.com",
+  "to": "recipient@example.com",
+  "subject": "报表文件",
+  "body": "请查收附件中的报表文件",
+  "bodyFormat": false,
+  "attachmentUrl": "https://example.com/report.pdf,https://example.com/chart.png"
+}
+```
+
+### 动态内容邮件
+```text
+{
+  "accountId": "email_account_001",
+  "from": "sender@example.com",
+  "to": "${user.email}",
+  "subject": "欢迎 ${user.name}",
+  "body": "亲爱的${user.name}，您的账号已激活",
+  "bodyFormat": false
+}
+```
+
+## SMTP服务器配置
+
+### EmailConfig参数
+- **smtpHost**：SMTP服务器地址（如smtp.gmail.com）
+- **smtpPort**：SMTP端口（SSL通常465，TLS通常587）
+- **starttls**：是否启用STARTTLS（true为TLS，false为SSL）
+- **username**：邮箱账号
+- **password**：邮箱密码或授权码
+
+### 常用配置示例
+
+### Gmail配置
+```text
+{
+  "smtpHost": "smtp.gmail.com",
+  "smtpPort": 587,
+  "starttls": true,
+  "username": "your-email@gmail.com",
+  "password": "your-app-password"
+}
+```
+
+### Outlook配置
+```text
+{
+  "smtpHost": "smtp-mail.outlook.com",
+  "smtpPort": 587,
+  "starttls": true,
+  "username": "your-email@outlook.com",
+  "password": "your-password"
+}
+```
+
+### 企业邮箱配置
+```text
+{
+  "smtpHost": "mail.company.com",
+  "smtpPort": 465,
+  "starttls": false,
+  "username": "user@company.com",
+  "password": "password"
+}
+```
+
+## 执行逻辑
+
+### 参数验证
+1. 验证邮箱格式和必填字段
+2. 检查SMTP服务器配置
+3. 验证附件URL可访问性
+
+### 邮件构建
+1. 创建JavaMail会话
+2. 设置邮件头信息（发件人、收件人、主题）
+3. 处理抄送人列表
+4. 设置正文内容和格式
+5. 处理附件下载和添加
+
+### 发送过程
+1. 建立SMTP连接
+2. 进行身份认证
+3. 发送邮件数据
+4. 关闭连接并返回结果
+
+## 输出结果
+
+### EmailOutput结构
+```text
+{
+  "result": true,
+  "msg": "邮件发送成功"
+}
+```
+
+### 成功响应
+```text
+{
+  "result": true,
+  "msg": "邮件发送成功"
+}
+```
+
+### 失败响应
+```text
+{
+  "result": false,
+  "msg": "身份验证失败，用户名或密码错误"
+}
+```
+
+## 附件处理
+
+### 支持格式
+- 图片文件（jpg、png、gif等）
+- 文档文件（pdf、doc、xls等）
+- 压缩文件（zip、rar等）
+- 其他二进制文件
+
+### URL格式
+- HTTP/HTTPS URL：`https://example.com/file.pdf`
+- 多个附件：`url1,url2,url3`
+
+### 文件名处理
+- 自动从URL提取文件名
+- 支持中文文件名
+- 避免文件名冲突
+
+## 错误处理
+
+### 常见错误类型
+1. **认证失败**：用户名或密码错误
+2. **连接失败**：SMTP服务器不可达
+3. **邮箱格式错误**：发件人或收件人格式不正确
+4. **附件下载失败**：附件URL不可访问
+5. **内容过大**：邮件大小超过服务器限制
+
+### 错误码映射
+- **535**：身份验证失败
+- **553**：邮箱格式错误
+- **550**：收件人不存在
+- **552**：邮箱空间不足
+- **421**：服务暂时不可用
+
+## 高级功能
+
+### 模板引擎
+
+支持使用变量替换创建动态邮件：
+```text
+{
+  "subject": "订单 ${order.id} 确认",
+  "body": "尊敬的${customer.name}，您的订单${order.id}已确认，总金额${order.amount}元"
+}
+```
+
+### 批量发送
+
+结合循环节点实现批量邮件发送：
+```text
+Loop (遍历用户列表)
+├── EmailAction (发送个性化邮件)
+└── SleepAction (控制发送频率)
+```
+
+### 发送频率控制
+
+配置发送间隔避免被识别为垃圾邮件：
+```text
+{
+  "rateLimit": {
+    "maxPerMinute": 10,
+    "delayMs": 6000
+  }
+}
+```
+
+## 最佳实践
+
+### 邮件配置
+- 使用专用邮件账号
+- 配置正确的SMTP参数
+- 启用SSL/TLS加密
+
+### 内容设计
+- 简洁明了的主题
+- 合适的正文格式
+- 合理的附件大小
+
+### 错误处理
+- 实现重试机制
+- 记录发送失败详情
+- 提供备用通知方式
+
+### 合规要求
+- 添加退订链接
+- 遵守反垃圾邮件法
+- 保护用户隐私
+
+## 调试和监控
+
+### 发送日志
+- 邮件发送详情记录
+- 附件处理过程
+- SMTP会话信息
+
+### 成功率监控
+- 发送成功率统计
+- 平均发送时间
+- 错误类型分布
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q: 如何发送HTML格式邮件？">
+**A:** 设置bodyFormat为true，并使用HTML标签编写body内容。注意确保HTML语法正确。
+</Accordion>
+<Accordion title="Q: 支持多少个附件？">
+**A:** 理论上没有限制，但建议不超过5个附件。单个附件最大10MB，总大小不超过25MB。
+</Accordion>
+<Accordion title="Q: 如何处理抄送多个收件人？">
+**A:** 在cc字段中使用逗号分隔多个邮箱地址，如"cc1@example.com,cc2@example.com"。
+</Accordion>
+<Accordion title="Q: 邮件发送失败怎么排查？">
+**A:** 检查SMTP配置、邮箱密码、收件人地址格式。查看错误日志获取具体失败原因。
+</Accordion>
+<Accordion title="Q: 支持定时发送吗？">
+**A:** 节点本身不支持定时，可以结合Cron触发器或Sleep节点实现定时发送功能。
+</Accordion>
+<Accordion title="Q: 如何自定义邮件模板？">
+**A:** 可以在流程中预先准备邮件内容模板，然后通过变量替换实现个性化发送。
+</Accordion>
+</Accordions>
+
+## 相关文档
+
+<Cards>
+  <Card title="变量节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/变量节点" />
+  <Card title="存储子节点" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/存储子节点" />
+  <Card title="返回变量" href="/docs/05-连接中心/AI连接流/节点功能说明/内置节点/返回变量" />
+</Cards>

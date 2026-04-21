@@ -1,0 +1,32 @@
+---
+title: "获取部门详情"
+description: "根据 org_id 查询指定组/部门的详情。"
+full: true
+api:
+  group: "组织与部门"
+  groupHref: "/docs/08-API使用手册/API参考/组织与部门/概览"
+  method: "GET"
+  path: "/iam/api/orgs/{org_id}"
+  auth: "Bearer Token"
+  summary: "适合在更新前做详情核验，或用于单条问题排查。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备组织架构管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "组织与部门概览"
+      href: "/docs/08-API使用手册/API参考/组织与部门/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/orgs/{org_id}"
+      method: "get"
+---
+
+## 接口定位
+
+- 所属能力分组：组织与部门
+- 典型用途：适合在更新前做详情核验，或用于单条问题排查。
+- 请求路径：`/iam/api/orgs/{org_id}`

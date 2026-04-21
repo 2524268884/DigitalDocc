@@ -1,0 +1,32 @@
+---
+title: "获取用户角色信息"
+description: "获取指定用户的角色信息。"
+full: true
+api:
+  group: "角色与标签"
+  groupHref: "/docs/08-API使用手册/API参考/角色与标签/概览"
+  method: "GET"
+  path: "/iam/api/tags/getTagList/user"
+  auth: "Bearer Token"
+  summary: "适合从用户视角排查授权结果。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备角色管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "角色与标签概览"
+      href: "/docs/08-API使用手册/API参考/角色与标签/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/tags/getTagList/user"
+      method: "get"
+---
+
+## 接口定位
+
+- 所属能力分组：角色与标签
+- 典型用途：适合从用户视角排查授权结果。
+- 请求路径：`/iam/api/tags/getTagList/user`

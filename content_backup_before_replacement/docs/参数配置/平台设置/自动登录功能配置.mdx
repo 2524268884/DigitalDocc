@@ -1,0 +1,151 @@
+---
+title: "自动登录功能配置"
+description: "基于「记住密码」能力的自动登录功能，用户勾选后下次访问时无需手动输入凭证即可登录，兼容 MFA 多因子认证流程。"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+## 概述
+
+<ImageZoom
+  src="/images/参数配置/平台设置/自动登录功能配置/overview.png"
+  alt="自动登录功能配置概览截图"
+  width={1200}
+  height={720}
+/>
+
+自动登录功能基于现有的「记住密码」功能，进一步优化登录体验。用户可勾选「自动登录」选项，系统在检测到有效凭证时自动完成登录，提升高频用户的便捷性。
+
+<Callout type="info">
+自动登录功能仅适用于专属集成平台账密登录，支持通过后台统一开关控制。
+</Callout>
+
+---
+
+## 操作步骤
+
+### 管理员开启自动登录
+
+<Steps>
+<Step>
+### 步骤 1：进入密码策略页面
+
+<ImageZoom
+  src="/images/参数配置/平台设置/自动登录功能配置/step-01.png"
+  alt="进入密码策略页面截图"
+  width={1200}
+  height={720}
+/>
+
+登录后台管理系统，进入 **平台设置 → 密码策略** 页面。
+</Step>
+<Step>
+### 步骤 2：确认记住密码已开启
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-02.png" alt="确认记住密码已开启截图" width="1200" height="720" */}
+
+确保「登录页是否开启记住密码」选项已开启（自动登录开关依赖此功能）。
+</Step>
+<Step>
+### 步骤 3：开启自动登录
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-03.png" alt="开启自动登录截图" width="1200" height="720" */}
+
+勾选「是否允许自动登录」选项。
+</Step>
+<Step>
+### 步骤 4：保存配置
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-04.png" alt="保存配置截图" width="1200" height="720" */}
+
+点击「保存」按钮，配置生效后所有用户均可在登录时选择自动登录。
+</Step>
+</Steps>
+
+<Callout type="warn">
+自动登录开关依赖「记住密码」功能，请确保记住密码已开启后再启用自动登录。启用后，所有用户均可选择自动登录。
+</Callout>
+
+---
+
+### 用户使用自动登录
+
+<Steps>
+<Step>
+### 步骤 1：打开登录页面
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-05.png" alt="打开登录页面截图" width="1200" height="720" */}
+
+打开专属集成平台登录页面，输入用户名和密码。
+</Step>
+<Step>
+### 步骤 2：勾选自动登录
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-06.png" alt="勾选自动登录截图" width="1200" height="720" */}
+
+勾选「自动登录」复选框（仅在专属集成平台账密登录时显示此选项）。
+</Step>
+<Step>
+### 步骤 3：完成登录
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-07.png" alt="完成登录截图" width="1200" height="720" */}
+
+点击「登录」按钮完成本次登录。
+</Step>
+<Step>
+### 步骤 4：后续自动登录
+
+{/* DOC_IMAGE src="/images/参数配置/平台设置/自动登录功能配置/step-08.png" alt="后续自动登录截图" width="1200" height="720" */}
+
+下次访问登录页面时，系统自动检测本地凭证并完成登录。
+</Step>
+</Steps>
+
+<Callout type="info">
+以下情况将清除自动登录凭证，需重新手动登录：
+- 凭证过期或验证失败
+- 用户手动点击「退出登录」
+</Callout>
+
+---
+
+### 与 MFA 多因子认证的适配
+
+若租户同时启用了 MFA，自动登录过程中将触发 MFA 认证流程：
+
+1. 系统自动完成账密验证步骤
+2. 跳转至 MFA 验证页面
+3. 用户完成 MFA 认证（如输入验证码）后，方可进入系统
+
+<Callout type="warn">
+MFA 认证不可跳过，即使自动登录凭证有效，仍需完成 MFA 验证。若 MFA 验证失败，用户需重新手动登录。
+</Callout>
+
+---
+
+## 常见问题
+
+<Accordions>
+<Accordion title="为什么「自动登录」复选框没有显示？">
+自动登录选项仅在专属集成平台账密登录方式下显示。如使用第三方认证源（如钉钉、企业微信等）登录，不会显示此选项。另外请确认管理员已在后台开启「允许自动登录」配置。
+</Accordion>
+<Accordion title="自动登录的凭证有效期是多久？">
+本地凭证有效时间遵循「记住密码」的逻辑配置，具体有效期由管理员在密码策略中设置。
+</Accordion>
+<Accordion title="开启自动登录后安全性是否会降低？">
+自动登录功能仍基于加密的本地凭证，且不绕过 MFA 认证。建议在企业设备上使用，公共设备不建议开启此功能。
+</Accordion>
+</Accordions>
+
+---
+
+## 相关文档
+
+<Cards>
+  <Card title="登录流程配置" description="配置登录后各步骤的执行顺序" href="/docs/参数配置/平台设置/登录流程配置" />
+  <Card title="弱密码检测功能说明" description="了解密码强度检测机制与配置方法" href="/docs/参数配置/平台设置/弱密码检测功能说明" />
+  <Card title="MFA 规则配置" description="配置多因子认证触发规则" href="/docs/用户中心/MFA认证/MFA规则配置" />
+</Cards>

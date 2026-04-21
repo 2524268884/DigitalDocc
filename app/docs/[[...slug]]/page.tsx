@@ -1,17 +1,14 @@
+import fs from 'node:fs/promises';
 import { notFound, redirect } from 'next/navigation';
 import { source } from '../../../lib/source';
 import { DocsPage, DocsBody, DocsTitle, DocsDescription } from 'fumadocs-ui/page';
-import defaultMdxComponents from 'fumadocs-ui/mdx';
-import { Steps, Step } from 'fumadocs-ui/components/steps';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { APIPage } from 'fumadocs-openapi/ui';
 import path from 'path';
 import type { ReactNode } from 'react';
+import { useMDXComponents } from '../../../mdx-components';
 
 export const dynamic = 'force-static';
+const API_ROUTE_MAP_PATH = path.resolve(process.cwd(), 'api/idaas-api-route-map.json');
 
 export function generateStaticParams() {
   return source.generateParams();
@@ -21,40 +18,132 @@ interface Props {
   params: Promise<{ slug?: string[] }>;
 }
 
-const mdxComponents = {
-  ...defaultMdxComponents,
-  Steps,
-  Step,
-  Tabs,
-  Tab,
-  Callout,
-  Card,
-  Cards,
-  Accordion,
-  Accordions,
-};
+interface DocLink {
+  href: string;
+  title: string;
+}
+
+interface ApiDocMeta {
+  auth?: string;
+  group?: string;
+  groupHref?: string;
+  method?: string;
+  path?: string;
+  prerequisites?: string[];
+  related?: DocLink[];
+  summary?: string;
+}
+
+const mdxComponents = useMDXComponents({});
+
+async function findApiRedirect(slug: string[]): Promise<string | null> {
+  if (slug.length === 0 || slug[0] !== '08-API使用手册') {
+    return null;
+  }
+
+  try {
+    const raw = await fs.readFile(API_ROUTE_MAP_PATH, 'utf8');
+    const routeMap = JSON.parse(raw) as Record<string, string>;
+    return routeMap[slug.join('/')] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function ApiSummary({ meta }: { meta: ApiDocMeta }) {
+  const prerequisites = meta.prerequisites ?? [];
+  const related = meta.related ?? [];
+
+  return (
+    <section className="mb-6 rounded-2xl border border-fd-border bg-fd-card p-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <p className="text-sm text-fd-muted-foreground">所属分组</p>
+          <p className="mt-1 font-medium">{meta.group ?? 'API参考'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-fd-muted-foreground">请求方法</p>
+          <p className="mt-1 font-medium">{meta.method ?? '-'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-fd-muted-foreground">请求路径</p>
+          <p className="mt-1 break-all font-mono text-sm">{meta.path ?? '-'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-fd-muted-foreground">鉴权方式</p>
+          <p className="mt-1 font-medium">{meta.auth ?? '以接口页为准'}</p>
+        </div>
+      </div>
+      {meta.summary ? (
+        <p className="mt-4 text-sm text-fd-muted-foreground">{meta.summary}</p>
+      ) : null}
+      {prerequisites.length > 0 ? (
+        <div className="mt-4">
+          <p className="text-sm font-medium">调用前置条件</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-fd-muted-foreground">
+            {prerequisites.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {(meta.groupHref || related.length > 0) ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {meta.groupHref ? (
+            <a
+              className="rounded-full border border-fd-border px-3 py-1 text-sm text-fd-muted-foreground transition hover:bg-fd-muted"
+              href={meta.groupHref}
+            >
+              查看分组概览
+            </a>
+          ) : null}
+          {related.map((link) => (
+            <a
+              key={`${link.title}-${link.href}`}
+              className="rounded-full border border-fd-border px-3 py-1 text-sm text-fd-muted-foreground transition hover:bg-fd-muted"
+              href={link.href}
+            >
+              {link.title}
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
 
 export default async function Page(props: Props): Promise<ReactNode> {
   const params = await props.params;
   const slug = params.slug ?? [];
 
   if (slug.length === 0) {
-    redirect('/docs/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%E9%9B%86%E6%88%90%E5%B9%B3%E5%8F%B0%E6%A6%82%E8%A7%88');
+    redirect('/docs/01-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%E9%9B%86%E6%88%90%E5%B9%B3%E5%8F%B0%E6%A6%82%E8%A7%88');
   }
 
   const page = source.getPage(slug);
-  if (!page) notFound();
+  if (!page) {
+    const redirectTarget = await findApiRedirect(slug);
+    if (redirectTarget) {
+      redirect(redirectTarget);
+    }
+
+    notFound();
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = page.data as any;
   const Content = data.body as React.ComponentType<{ components?: Record<string, unknown> }>;
+  const apiMeta = data.api as ApiDocMeta | undefined;
+
+  if (typeof data.redirect === 'string' && data.redirect.length > 0) {
+    redirect(data.redirect);
+  }
 
   // API pages generated by fumadocs-openapi have _openapi frontmatter
   const isApiPage = Boolean(data._openapi);
 
   if (isApiPage) {
-    // Resolve openapi.yaml to absolute path (v8 generates relative "openapi.yaml")
-    const docPath = path.resolve(process.cwd(), 'openapi.yaml');
+    const docPath = path.resolve(process.cwd(), 'api/idaas-api.json');
     const operations = data._openapi?.operations
       ?? [{ path: data._openapi?.route, method: (data._openapi?.method as string)?.toLowerCase() }];
 
@@ -69,6 +158,8 @@ export default async function Page(props: Props): Promise<ReactNode> {
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         <DocsBody>
+          {apiMeta ? <ApiSummary meta={apiMeta} /> : null}
+          <Content components={mdxComponents} />
           <APIPage
             document={docPath}
             operations={operations}

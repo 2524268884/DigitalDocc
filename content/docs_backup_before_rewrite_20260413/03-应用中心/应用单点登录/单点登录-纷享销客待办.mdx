@@ -1,0 +1,555 @@
+---
+title: "单点登录-纷享销客待办"
+description: "本文档详细介绍如何配置纷享销客与专属集成平台之间的待办消息免登功能。此功能允许用户在收到纷享销客待办消息后，点击待办消息可以无需重复登录即可直接进入相应的待办页面，极大地提升用户体验和工作效率。"
+---
+## 1\. 概述
+
+本文档详细介绍如何配置纷享销客与专属集成平台之间的待办消息免登功能。此功能允许用户在收到纷享销客待办消息后，点击待办消息可以无需重复登录即可直接进入相应的待办页面，极大地提升用户体验和工作效率。
+
+### 1.1 功能价值
+- **简化用户操作流程**：用户点击待办消息后无需额外登录，直接进入待办处理页面
+- **提高工作效率**：减少重复登录步骤，加快待办事项处理速度
+- **增强用户体验**：流畅的操作体验，降低用户操作门槛
+- **支持多渠道应用**：可应用于钉钉等多种消息推送渠道
+
+### 1.2 技术实现原理
+
+该功能通过纷享销客的"自定义认证服务商"功能实现，利用Java代码编写自定义认证逻辑，结合专属集成平台的身份认证服务，实现用户身份自动识别和无缝跳转至指定待办页面。
+
+## 2\. 前提条件
+
+在开始配置前，请确保满足以下条件：
+- **账号准备**：
+    - 拥有纷享销客管理员账号，具备认证服务商配置权限
+    - 拥有专属集成平台管理员账号
+- **用户数据准备**：
+    - 专属集成平台中已创建相应用户
+    - 纷享销客中已创建对应用户
+    - **关键**：确保纷享销客用户的手机号与专属集成平台中对应用户的手机号保持一致
+- **技术要求**：
+    - 对Java编程有基本了解，能够理解和修改示例代码
+    - 了解OAuth 2.0协议基本原理
+    - 对API调用有基本认识
+
+## 3\. 配置步骤
+
+### 3.1 纷享销客配置
+
+#### 步骤一：创建自定义认证服务商
+1. 以管理员身份登录纷享销客管理后台
+2. 导航至"系统管理 → 认证服务商"模块
+3. 点击"新增认证服务商"按钮
+4. 选择提供商类型为"自定义认证服务商"
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/11468451-5c46-43c0-a6c7-e141cc795e8d.png)
+1. 填写基本信息：
+    - 名称：自定义（建议使用有意义的名称，如"待办免登"）
+    - URL后缀：自定义一个标识符（如"todo"），此标识符将用于后续应用的RedirectURIs配置
+
+#### 步骤二：创建执行函数
+1. 点击"新增执行函数"按钮
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/a7f5e04e-d643-4c99-8f6a-aa8a11057b61.png)
+1. 填写函数基本信息：
+    - 代码名称：自定义Java代码文件的中文名称（如"待办免登认证函数"）
+    - API Name：Java文件名，建议使用英文（如"MobileToDo"）
+    - 命名空间：选择"认证提供商"
+    - 绑定对象：选择"不绑定对象"
+    - 描述：简要描述此函数的功能（如"实现待办消息免登功能"）
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/1ebbaffe-579d-467c-b82a-7cd910127efe.png)
+
+#### 步骤三：选择代码模板
+
+建议选择"空白模板"，以便完全自定义代码逻辑。
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/41319bf6-1310-4aee-b0e9-1fc5f9abb157.png)
+
+#### 步骤四：编写执行函数代码
+
+在代码编辑器中编写认证逻辑代码：
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/8K4nyaYaVo53nLbj/img/f664bce9-015b-42ee-945c-15d3d6a23687.png)
+
+**关键代码部分需要修改：**
+1. **应用登录地址**：修改为专属集成平台的应用登录地址
+```
+return "https://您的域名/iam/authorize?response_type=code&" +
+      "response_mode=query&" +
+      "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+      "redirect_uri=https%3A%2F%2F您的域名.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Ftodo&client_id=您的客户端ID&state="+continueUrl;
+```
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/ed0e05a2-016d-4b73-bedf-af1e481cfb7e.png)
+
+
+1. **待办跳转逻辑**：根据待办消息传递的参数，处理跳转逻辑
+```
+@Override
+String redirect(FunctionContext context, Map> params) {
+    log.info("params" + params);
+    log.info("context" + context);
+    if(params["state"] != null && params["state"].size() > 0 && params["state"].get(0)!=""){
+        log.info("333333");
+        return params["state"].get(0);
+    }else{
+        // 默认跳转逻辑
+        String s = params["continue"].get(0);
+        String substring = params["continue"].get(0).substring(74, s.length());
+        return "https://www.fxiaoke.com/XV/UI/Home#objdetail/AccountObj/" + substring;
+    }
+}
+```
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/75284963-6531-4b6a-aa8e-c8d4387235d6.png)
+
+示例：[https://{your-domain}.my.fxiaoke.com/oauth/sp/sso/todo?continue=](https://{your-domain}.my.fxiaoke.com/oauth/sp/sso/todo?continue=)  代办地址两次编码
+
+continue 参数可以修改，但是定义好之后就不能变
+
+不相同continue 的话 可以用task todo等，脚本中也会跟着变
+1. **自动登出URL**：配置登出时跳转的地址
+```
+@Override
+String logoffUrl(FunctionContext context) {
+    return "https:///iam/logout"
+}
+```
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/08d1dd7d-71ba-4221-9a9e-92324a659d43.png)
+1. **用户信息处理**：处理专属集成平台与纷享销客之间的用户匹配
+> **注意**：纷享销客登录的用户账号是不带"\+86"前缀的手机号，而专属集成平台集成钉钉的用户手机号带有"\+86"前缀，需要特殊处理以确保用户匹配   
+```
+String user = (String)o.content["phone_number"];
+if(user.size() == 15){
+    user = user.substring(4, 15); // 移除+86前缀
+}
+log.info(user)
+```
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/7e7c0ca0-96d5-4911-a026-1fa814ab11a0.png)
+
+第三方用户信息获取接口：专属集成平台客户环境获取用户信息接口：[https://\/iam/userinfo](https://{your-domain}.digitalsee.cn/iam/userinfo)
+1. **用户信息获取接口**：修改为您的专属集成平台环境地址
+```
+HttpResult o = (HttpResult) http.get("https://您的域名/iam/userinfo", ["Authorization": "Bearer "+accessToken]).getData();
+```
+
+#### 步骤五：保存配置
+
+完成代码编辑后，点击保存按钮。系统将生成三个关键URL：
+- 单点登录地址
+- 回调地址
+- 登出地址
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/2fa53888-dafc-41bb-be9f-0a9a4c9c074a.png)
+
+### 3.2 专属集成平台配置
+
+#### 步骤一：创建应用
+1. 登录专属集成平台管理控制台
+2. 导航至"应用管理"模块
+3. 点击"新建应用"，创建用于纷享销客免登的应用
+
+
+
+#### 步骤二：配置应用参数
+1. 填写应用基本信息
+2. 在RedirectURIs字段中，填入纷享销客生成的回调地址
+3. 配置应用授权范围，确定哪些用户可以使用此应用
+4. 点击保存完成配置
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/fb14ac8b-6aa2-4838-8345-3f9884b6220e.png)
+
+### 3.3 待办消息推送配置
+
+向消息推送开发人员提供待办消息跳转URL，格式为：
+```
+https://您的域名.my.fxiaoke.com/oauth/sp/sso/todo?continue=待办页面URL两次编码
+```
+> **说明**：continue参数是待办详情页的URL，需要进行两次URL编码。参数名称（如continue）可以根据需要修改为task、todo等，但修改后脚本中的参数名也需要同步修改。   
+
+## 4\. 验证与测试
+
+### 4.1 功能测试流程
+1. 在钉钉或其他平台接收纷享销客推送的待办消息
+2. 点击待办消息链接
+3. 系统自动跳转至专属集成平台认证
+4. 认证成功后，自动跳转至相应的待办处理页面
+5. 验证页面内容是否正确显示对应的待办事项
+
+### 4.2 日志查看
+
+配置完成后，可以通过纷享销客后台查看执行日志，验证配置是否正确：
+1. 在纷享销客后台搜索框中输入"APL"
+2. 查看自定义认证服务商代码的执行日志
+3. 分析日志中的错误信息，确定问题所在
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/b0b995e7-7175-47fc-9071-456f4f1a8439.png)
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/8d772a0b-c68f-44e8-84ea-1eb351e5e126.png)
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/eYVOLPBdzAgzOpz2/img/05986022-0c98-44ed-b043-21c3f0b7fb4d.png)
+
+## 5\. 常见问题(FAQ)
+
+### 5.1 配置问题
+
+**Q1: 待办消息点击后无法正常跳转到专属集成平台**
+
+A: 可能原因及解决方案：
+- 检查纷享销客中配置的应用登录地址是否正确
+- 验证URL中的client\_id是否与专属集成平台应用一致
+- 确认redirect\_uri是否正确编码
+
+**Q2: 认证成功后未跳转到正确的待办页面**
+
+A: 可能原因：
+- 检查redirect函数中的跳转逻辑是否正确
+- 确认continue参数是否正确传递并解析
+- 验证continue参数的URL编码是否正确（需两次编码）
+
+**Q3: 用户认证失败，提示"找不到对应的用户"**
+
+A: 这通常是由于用户匹配问题导致：
+- 确认纷享销客中用户的手机号与专属集成平台用户手机号一致
+- 检查代码中对手机号前缀（\+86）的处理逻辑是否正确
+- 验证查询PersonnelObj时使用的字段名是否正确
+
+### 5.2 开发问题
+
+**Q4: 如何调试自定义认证服务商代码？**
+
+A: 可以通过以下方式进行调试：
+- 在代码中使用log.info()输出关键变量和状态
+- 通过纷享销客后台的APL日志查看执行情况
+- 根据日志信息定位和解决问题
+
+**Q5: 如何处理不同类型的待办消息跳转？**
+
+A: 可以通过continue参数传递不同的目标URL，并在redirect函数中进行判断：
+```
+if(continueUrl.contains("AccountObj")) {
+    // 客户相关待办处理逻辑
+} else if(continueUrl.contains("OpportunityObj")) {
+    // 商机相关待办处理逻辑
+} else {
+    // 默认处理逻辑
+}
+```
+
+**Q6: 代码中的client***id和client*secret如何获取？
+
+A: 这些参数来自专属集成平台创建的应用：
+- client\_id对应应用的Client ID
+- client\_secret对应应用的Client Secret
+- 这些信息可在专属集成平台应用详情页查看
+
+## 6\. 代码示例
+
+### 6.1 待办免登完整代码示例
+
+代码示例1：
+```
+/**
+ * @author 丁聪
+ * @codeName 销售合同
+ * @description 销售合同
+ * @createTime 2023-06-29
+ */
+
+
+/**
+ * @type classes
+ * @namespace custom_oauth_protocol
+ * @returntype
+ */
+class MobileHeTong implements AuthProviderPlugin {
+
+    /**
+     * 登录时打开 {租户域名}.my.fxiaoke.com 跳转的第三方url
+     */
+    @Override
+    String authorize(FunctionContext context, Map> params) {
+        //返回给浏览器的第三方网站登录地址，具体参数内容请查阅第三方文档说明
+        return "https:///iam/authorize?" + "response_type=code&" +
+                "response_mode=query&" +
+                "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+                "redirect_uri=https%3A%2F%2F{your-domain}.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Fmhetong&client_id={your-client-id}";
+    }
+
+    /**
+     * 第三方登录完成后的回调函数，一般用于获取用户信息
+     * @param params 第三方回调时，URL的参数
+     * @return 返回纷享系统的员工ID
+     */
+    @Override
+    Integer callback(FunctionContext context, Map> params) {
+        //租户临时授权模式，如果有其他模式，请阅读第三方文档
+        String token = getAccessToken(params);
+        log.info(token);
+
+        //从人员对象，获取纷享用户userId
+        Integer userId = openId2userId(token);
+        log.info(userId);
+
+        return userId;
+    }
+
+    /**
+     * 登录成功后打开的页面，可以从params获取，或者指定一个页面，空则是打开默认的页面
+     * @return 登录成功后打开的URL
+     */
+    @Override
+    String redirect(FunctionContext context, Map> params) {
+        return "https://www.fxiaoke.com/hcrm/wechat#/uipaas_custom/object_list/pages/list/list?apiName=SaleContractObj&recordType="
+    }
+    /**
+     * 在纷享系统登出时，自动跳转到第三方系统登出地址
+     * @return 第三方登录地址，如无需登出第三方，请返回null
+     */
+    @Override
+    String logoffUrl(FunctionContext context) {
+        return "https:///iam/logout"
+    }
+
+    String getAccessToken(Map> parameterMap) {
+        //以某第三方为示意，具体请查看第三方登录文档
+        FormBody body = FormBody.builder()
+                .field("client_id", "{your-client-id}")
+                .field("scope", "openid profile address phone email offline_access")
+                .field("grant_type", "authorization_code")
+                .field("redirect_uri", "https://{your-domain}.my.fxiaoke.com/oauth/sp/sso/mhetong")
+                .field("client_secret", "{your-client-secret}")
+                .field("code", parameterMap["code"].get(0))
+                .build()
+
+        Request request = Request.builder()
+                .method("POST")
+                .url("https:///iam/token")
+                .timeout(7000)
+                .retryCount(0)
+                .body(body)
+                .build()
+
+        HttpResult o = (HttpResult) http.execute(request).getData()
+        log.info(o)
+        return (String)o.content["access_token"]
+    }
+
+    Integer openId2userId(String accessToken) {
+        //获取第三方用户信息
+        HttpResult o = (HttpResult) http.get("https:///iam/userinfo", ["Authorization": "Bearer "+accessToken]).getData();
+        log.info(o)
+        String user = (String)o.content["phone_number"];
+        if( user.size() == 15 ){
+            user = user.substring(4, 15);
+        }
+        log.info(user)
+
+        //从第三方用户信息里，查询人员对象获取绑定信息，建议用自定义字段
+        QueryResult data = (QueryResult) object.find("PersonnelObj",
+                [["phone": user]],
+                2,
+                0
+        ).getData()
+        List dataList = data.dataList
+
+        //如果用户信息查找失败，返回错误
+        //也可以在此根据信息，进行新建人员并且设置绑定字段的内容
+        if (dataList.size()  1) {
+            message.throwErrorMessage("找到多个对应的用户, user:" + user)
+        }
+
+        //返回员工对象中的user_id字段，用于后续登录时使用
+        return dataList[0]["user_id"].toString() as Integer
+    }
+
+    //debug 时候的入口方法
+    static void debug(FunctionContext context, Map arg) {
+
+    }
+}
+```
+
+代码示例2：
+```
+/**
+ * @author 丁聪
+ * @codeName 待办名称
+ * @description 创建模式
+ * @createTime 2023-07-06
+ */
+
+
+/**
+ * @type classes
+ * @namespace custom_oauth_protocol
+ * @returntype
+ */
+class MobileToDo implements AuthProviderPlugin {
+
+     /**
+     * 登录时打开 {租户域名}.my.fxiaoke.com 跳转的第三方url
+     */
+    @Override
+    String authorize(FunctionContext context, Map> params) {
+        log.info("111111");
+        log.info(params);
+        String continueUrl ="";
+        if(params["continue"] != null){
+          continueUrl  = params["continue"].get(0);
+        }
+        
+        //返回给浏览器的第三方网站登录地址，具体参数内容请查阅第三方文档说明
+        return "https:///iam/authorize?response_type=code&" +
+                "response_mode=query&" +
+                "scope=openid%20profile%20address%20phone%20email%20offline_access&" +
+                "redirect_uri=https%3A%2F%2F{your-domain}.my.fxiaoke.com%2Foauth%2Fsp%2Fcallback%2Ftodo&client_id={your-client-id}&state="+continueUrl;
+    }
+
+    /**
+     * 第三方登录完成后的回调函数，一般用于获取用户信息
+     * @param params 第三方回调时，URL的参数
+     * @return 返回纷享系统的员工ID
+     */
+    @Override
+    Integer callback(FunctionContext context, Map> params) {
+        //租户临时授权模式，如果有其他模式，请阅读第三方文档
+        String token = getAccessToken(params);
+        log.info(token);
+
+        //从人员对象，获取纷享用户userId
+        Integer userId = openId2userId(token);
+        log.info(userId);
+
+        return userId;
+    }
+
+    /**
+     * 登录成功后打开的页面，可以从params获取，或者指定一个页面，空则是打开默认的页面
+     * @return 登录成功后打开的URL
+     */
+    @Override
+    String redirect(FunctionContext context, Map> params) {
+        log.info("params" + params);
+        log.info("context" + context);
+        if(params["state"] != null && params["state"].size() > 0 && params["state"].get(0)!=""){
+          log.info("333333");
+           return params["state"].get(0);
+        }else{
+          String s = params["continue"].get(0);
+         String substring = params["continue"].get(0).substring(74, s.length());
+         return "https://www.fxiaoke.com/XV/UI/Home#objdetail/AccountObj/" + substring ;
+        }
+        //?apiName=xx&dataId=xxx
+    }
+    /**
+     * 在纷享系统登出时，自动跳转到第三方系统登出地址
+     * @return 第三方登录地址，如无需登出第三方，请返回null
+     */
+    @Override
+    String logoffUrl(FunctionContext context) {
+        return "https:///iam/logout"
+    }
+
+    String getAccessToken(Map> parameterMap) {
+        //以某第三方为示意，具体请查看第三方登录文档
+        FormBody body = FormBody.builder()
+                .field("client_id", "{your-client-id}")
+                .field("grant_type", "authorization_code")
+                .field("redirect_uri", "https://{your-domain}.my.fxiaoke.com/oauth/sp/callback/todo")
+                .field("client_secret", "{your-client-secret}")
+                .field("code", parameterMap["code"].get(0))
+                .build()
+
+        Request request = Request.builder()
+                .method("POST")
+                .url("https:///iam/token")
+                .timeout(7000)
+                .retryCount(0)
+                .body(body)
+                .build()
+
+        HttpResult o = (HttpResult) http.execute(request).getData()
+        log.info(o)
+        return (String)o.content["access_token"]
+    }
+
+    Integer openId2userId(String accessToken) {
+        //获取第三方用户信息
+        HttpResult o = (HttpResult) http.get("https:///iam/userinfo", ["Authorization": "Bearer "+accessToken]).getData();
+        log.info(o)
+        
+        String user = (String)o.content["phone_number"];
+        if( user.size() == 15 ){
+            user = user.substring(4, 15);
+        }
+        log.info(user)
+
+        //从第三方用户信息里，查询人员对象获取绑定信息，建议用自定义字段
+        QueryResult data = (QueryResult) object.find("PersonnelObj",
+                [["phone": user]],
+                2,
+                0
+        ).getData()
+        List dataList = data.dataList
+
+        //如果用户信息查找失败，返回错误
+        //也可以在此根据信息，进行新建人员并且设置绑定字段的内容
+        if (dataList.size()  1) {
+            message.throwErrorMessage("找到多个对应的用户, user:" + user)
+        }
+
+        //返回员工对象中的user_id字段，用于后续登录时使用
+        return dataList[0]["user_id"].toString() as Integer
+    }
+
+    //debug 时候的入口方法
+    static void debug(FunctionContext context, Map arg) {
+
+    }
+}
+```
+> 配置完成后，会生成对应的回调，登录，登出地址；配置到云身份链接器后台即可   
+
+## 7\. 最佳实践
+
+### 7.1 安全建议
+1. **参数安全处理**：
+    - 对所有用户输入进行严格验证和过滤
+    - 防止SQL注入和XSS攻击
+    - 避免在日志中打印敏感信息
+2. **凭证保护**：
+    - 不要在代码中硬编码client\_secret等敏感信息
+    - 定期更新应用凭证
+    - 限制应用权限范围
+3. **异常处理**：
+    - 完善异常处理逻辑，提供友好的错误提示
+    - 记录详细的错误日志，便于问题排查
+    - 设置合理的超时和重试策略
+
+### 7.2 性能优化
+1. **减少API调用**：
+    - 优化认证流程，减少不必要的API调用
+    - 考虑添加缓存机制，减少重复请求
+2. **优化查询**：
+    - 确保PersonnelObj查询使用索引字段
+    - 只查询必要的字段，减少数据传输量
+3. **提高响应速度**：
+    - 设置合理的超时参数
+    - 优化代码执行效率
+    - 考虑异步处理非关键步骤
+
+### 7.3 用户体验优化
+1. **错误提示**：
+    - 提供明确的错误提示，帮助用户理解问题
+    - 对常见错误提供自助解决方案
+2. **跳转体验**：
+    - 减少跳转次数，提供流畅的登录体验
+    - 添加加载提示，避免用户困惑
+3. **兼容性考虑**：
+    - 适配不同的终端设备（PC、移动端）
+    - 考虑不同网络环境下的用户体验
+
+

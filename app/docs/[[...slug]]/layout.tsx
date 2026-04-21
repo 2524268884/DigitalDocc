@@ -2,6 +2,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { baseOptions } from '../../../lib/layout.shared';
 import { source } from '../../../lib/source';
 import type { ReactNode } from 'react';
+import { SidebarScrollRestoration } from './sidebar-scroll-restoration';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         defaultOpenLevel: 1,
       }}
     >
+      <SidebarScrollRestoration />
       {children}
     </DocsLayout>
   );

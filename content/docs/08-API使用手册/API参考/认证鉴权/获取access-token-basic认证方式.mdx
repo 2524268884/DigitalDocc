@@ -1,0 +1,32 @@
+---
+title: "获取 access_token（Basic 认证方式）"
+description: "使用 Basic 认证头换取 access_token。"
+full: true
+api:
+  group: "认证鉴权"
+  groupHref: "/docs/08-API使用手册/API参考/认证鉴权/概览"
+  method: "POST"
+  path: "/iam/token/basic"
+  auth: "无需 Bearer Token"
+  summary: "适合已接入标准 OAuth2 客户端认证方式的系统。"
+  prerequisites:
+    - "准备好 client_id 与 client_secret"
+    - "调用方支持 Basic 认证头"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "认证鉴权概览"
+      href: "/docs/08-API使用手册/API参考/认证鉴权/概览"
+_openapi:
+  operations:
+    - path: "/iam/token/basic"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：认证鉴权
+- 典型用途：适合已接入标准 OAuth2 客户端认证方式的系统。
+- 请求路径：`/iam/token/basic`

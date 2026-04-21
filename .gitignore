@@ -23,3 +23,7 @@ Thumbs.db
 
 # Cache
 .cache/
+
+# Screenshot staging
+image/inbox/*
+!image/inbox/.gitkeep

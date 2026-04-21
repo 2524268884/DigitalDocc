@@ -1,0 +1,32 @@
+---
+title: "修改用户密码"
+description: "修改指定用户的密码。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "POST"
+  path: "/iam/api/users/password"
+  auth: "Bearer Token"
+  summary: "适合首次初始化、人工重置或迁移后的密码矫正。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/users/password"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：适合首次初始化、人工重置或迁移后的密码矫正。
+- 请求路径：`/iam/api/users/password`

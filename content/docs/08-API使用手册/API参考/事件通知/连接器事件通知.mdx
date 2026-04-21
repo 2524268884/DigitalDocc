@@ -1,0 +1,37 @@
+---
+title: "连接器事件通知"
+description: "向指定租户和连接器发送事件通知。"
+full: true
+api:
+  group: "事件通知"
+  groupHref: "/docs/08-API使用手册/API参考/事件通知/概览"
+  method: "POST"
+  path: "/iam/api/open/event/{tenantId}/{connectorId}/{apiKey}"
+  auth: "路径中的 apiKey"
+  summary: "适合连接器回调和事件驱动的数据同步。"
+  prerequisites:
+    - "准备 tenantId、connectorId 和 apiKey"
+    - "确认目标连接器已启用"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "事件通知概览"
+      href: "/docs/08-API使用手册/API参考/事件通知/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/open/event/{tenantId}/{connectorId}/{apiKey}"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：事件通知
+- 典型用途：适合连接器回调和事件驱动的数据同步。
+- 请求路径：`/iam/api/open/event/{tenantId}/{connectorId}/{apiKey}`
+
+## 调用建议
+
+- 调用前先确认 tenantId 与 connectorId 对应关系无误。
+- 如果回调处理失败，优先排查 apiKey、事件体结构和连接器运行状态。

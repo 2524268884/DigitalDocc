@@ -1,0 +1,38 @@
+---
+title: "Webhook 启动连接流"
+description: "通过 Webhook 路径参数触发指定连接流。"
+full: true
+api:
+  group: "数据连接"
+  groupHref: "/docs/08-API使用手册/API参考/数据连接/概览"
+  method: "POST"
+  path: "/acm/flows/start/{actionId}/{flowId}/{apiKey}"
+  auth: "路径中的 apiKey"
+  summary: "适合由外部系统主动触发集成流程。"
+  prerequisites:
+    - "准备 actionId、flowId 和 apiKey"
+    - "确认连接流已发布并可用"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "数据连接概览"
+      href: "/docs/08-API使用手册/API参考/数据连接/概览"
+_openapi:
+  operations:
+    - path: "/acm/flows/start/{actionId}/{flowId}/{apiKey}"
+      method: "post"
+---
+
+## 接口定位
+
+- 所属能力分组：数据连接
+- 典型用途：适合由外部系统主动触发集成流程。
+- 请求路径：`/acm/flows/start/{actionId}/{flowId}/{apiKey}`
+
+## 调用建议
+
+- 这是一个面向外部系统触发的入口接口，请优先保护好路径中的 `apiKey`。
+- 如果调用没有触发流程，先核对 actionId、flowId 是否对应到已发布的连接流。
+- 联调失败时，建议同时查看平台运行日志和调用方的请求日志。

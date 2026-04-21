@@ -1,0 +1,44 @@
+---
+title: "数据连接接口"
+description: "通过 Webhook 方式触发连接流，适合外部系统驱动集成流程。"
+---
+
+## 这组接口适合做什么
+
+系统事件触发连接流、外部平台回调到集成平台。
+
+<Callout>
+本组共收录 **1** 个接口操作，推荐先阅读下面的调用顺序，再进入具体接口页。
+</Callout>
+
+## 推荐调用顺序
+
+<Steps>
+  <Step>
+
+确认目标连接流已发布，并拿到 actionId、flowId 与 apiKey。
+
+  </Step>
+  <Step>
+
+由外部系统按约定路径发起 Webhook 请求。
+
+  </Step>
+  <Step>
+
+收到异常时优先核对 apiKey、路径参数和值班日志。
+
+  </Step>
+</Steps>
+
+## 高频接口
+
+<Cards>
+  <Card title="Webhook 启动连接流" href="/docs/08-API使用手册/API参考/数据连接/Webhook启动连接流" />
+</Cards>
+
+## 全部接口
+
+| 接口 | 方法 | 路径 | 说明 |
+| --- | --- | --- | --- |
+| [Webhook 启动连接流](/docs/08-API使用手册/API参考/数据连接/Webhook启动连接流) | `POST` | `/acm/flows/start/{actionId}/{flowId}/{apiKey}` | 适合由外部系统主动触发集成流程。 |

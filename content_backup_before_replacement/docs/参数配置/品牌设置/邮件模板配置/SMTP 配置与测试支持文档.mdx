@@ -1,0 +1,153 @@
+---
+title: "SMTP 配置与测试"
+description: "在专属集成平台中配置第三方邮件服务的 SMTP 协议，确保邮件发送功能正常运行，满足业务通信需求。"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+## 概述
+
+<ImageZoom
+  src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/overview.png"
+  alt="SMTP 配置与测试概览截图"
+  width={1200}
+  height={720}
+/>
+
+SMTP（Simple Mail Transfer Protocol，简单邮件传输协议）是发送电子邮件的标准协议，负责将邮件从发件人的邮件服务器传输到收件人的邮件服务器。通过在专属集成平台配置第三方邮件服务的 SMTP 信息，可确保系统通知、验证码等邮件的正常发送。
+
+---
+
+## 配置前准备
+
+### 获取 SMTP 服务器信息
+
+向邮件服务提供商（如腾讯企业邮箱、网易邮箱等）获取以下信息，或查阅服务商官方文档：
+
+| 信息项 | 说明 | 示例（腾讯企业邮箱） |
+|--------|------|---------------------|
+| SMTP 服务器地址 | 服务商提供的 SMTP 主机地址 | `smtp.exmail.qq.com` |
+| 端口号 | 根据加密方式选择对应端口 | SSL: 465，STARTTLS: 587，无加密: 25 |
+| 加密方式 | SSL / TLS / 无加密（不推荐） | SSL |
+
+### 账户权限确认
+
+- 确保用于配置 SMTP 的邮件账户具有发送邮件的权限
+- 部分服务商（如 QQ 邮箱）需在邮箱设置中开启 SMTP 服务并生成**授权码**，配置时使用授权码代替密码
+
+### 网络与防火墙检查
+
+- 确保服务器能正常访问互联网
+- 防火墙需开放与 SMTP 服务器通信的出站端口（25、465 或 587，取决于加密方式）
+
+<Callout type="warn">
+不推荐使用端口 25 的无加密方式，安全性较低，邮件内容可能被截获。建议优先使用 SSL（端口 465）或 STARTTLS（端口 587）。
+</Callout>
+
+---
+
+## 操作步骤
+
+### 配置 SMTP
+
+<Steps>
+<Step>
+### 步骤 1：进入 SMTP 配置页面
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-01.png" alt="进入 SMTP 配置页面截图" width="1200" height="720" */}
+
+登录专属集成平台管理后台，导航至 **品牌设置 → 邮件模板设置 → 第三方邮件服务**。
+</Step>
+<Step>
+### 步骤 2：填写 SMTP 服务器信息
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-02.png" alt="填写 SMTP 服务器信息截图" width="1200" height="720" */}
+
+- **SMTP 服务器地址**：填写从服务商获取的 SMTP 主机地址
+- **端口号**：根据加密方式填写对应端口（SSL: 465，STARTTLS: 587）
+- **加密方式**：从下拉菜单选择与 SMTP 服务器匹配的加密方式
+</Step>
+<Step>
+### 步骤 3：填写邮件账户信息
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-03.png" alt="填写邮件账户信息截图" width="1200" height="720" */}
+
+- **邮箱地址**：输入用于发送邮件的完整邮箱地址（如 `sender@example.com`）
+- **密码/授权码**：输入邮箱密码，若服务商要求使用授权码（如 QQ 邮箱），则填写授权码
+</Step>
+<Step>
+### 步骤 4：保存配置
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-04.png" alt="保存配置截图" width="1200" height="720" */}
+
+完成信息填写后，点击「保存」按钮保存 SMTP 配置。
+</Step>
+</Steps>
+
+### 发送测试邮件
+
+<Steps>
+<Step>
+### 步骤 1：填写测试收件地址
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-05.png" alt="填写测试收件地址截图" width="1200" height="720" */}
+
+在 SMTP 配置页面找到「测试邮件地址」输入框，输入有效的收件人邮箱地址（建议使用自己的另一个邮箱）。
+</Step>
+<Step>
+### 步骤 2：发起测试
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-06.png" alt="发起测试截图" width="1200" height="720" */}
+
+点击「发送测试邮件」按钮，系统将使用当前 SMTP 配置尝试发送测试邮件，通常在几秒到一分钟内返回结果。
+</Step>
+<Step>
+### 步骤 3：查看测试结果
+
+{/* DOC_IMAGE src="/images/参数配置/品牌设置/邮件模板配置/SMTP 配置与测试支持文档/step-07.png" alt="查看测试结果截图" width="1200" height="720" */}
+
+- **测试成功**：系统提示「测试邮件发送成功」，登录收件邮箱确认是否收到测试邮件
+- **测试失败**：根据错误信息按照下方「常见问题」进行排查
+</Step>
+</Steps>
+
+---
+
+## 常见问题
+
+<Accordions>
+<Accordion title="身份验证失败怎么处理？">
+可能原因为邮箱地址、密码或授权码输入错误，或邮件账户权限不足。
+
+解决方法：
+1. 仔细核对邮箱地址和密码/授权码是否准确
+2. 确认邮件账户已开启 SMTP 发送权限
+3. 如使用授权码登录，尝试重新生成授权码并更新配置
+</Accordion>
+<Accordion title="连接失败怎么排查？">
+可能原因为网络问题、防火墙阻止连接，或 SMTP 服务器地址/端口号配置错误。
+
+解决方法：
+1. 检查服务器网络连接，尝试 ping 通 SMTP 服务器地址
+2. 确认防火墙已开放对应端口（465 或 587）的出站连接
+3. 再次核对 SMTP 服务器地址和端口号是否与服务商提供的一致
+</Accordion>
+<Accordion title="QQ 邮箱如何获取授权码？">
+登录 QQ 邮箱 → 设置 → 账户 → 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」→ 开启 SMTP 服务 → 按提示验证手机后生成授权码，将授权码填入 SMTP 配置的「密码」字段。
+</Accordion>
+<Accordion title="配置保存成功但邮件一直收不到怎么办？">
+请检查：测试收件地址是否正确；邮件是否进入了垃圾箱；检查服务器防火墙和出站规则；确认邮件服务商账户余额/额度是否充足（企业邮箱可能有发送配额限制）。
+</Accordion>
+</Accordions>
+
+---
+
+## 相关文档
+
+<Cards>
+  <Card title="短信服务使用及签名修改" description="配置短信服务和自定义签名" href="/docs/参数配置/品牌设置/短信模板配置/短信服务使用及签名修改使用指南" />
+  <Card title="分发页面设置" description="自定义应用分发平台的界面样式与验证方式" href="/docs/参数配置/品牌设置/分发页面设置" />
+</Cards>

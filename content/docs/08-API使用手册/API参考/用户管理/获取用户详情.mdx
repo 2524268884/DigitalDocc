@@ -1,0 +1,37 @@
+---
+title: "获取用户详情"
+description: "根据用户帐号获取用户信息。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "GET"
+  path: "/iam/api/user"
+  auth: "Bearer Token"
+  summary: "适合单账号核验、更新前校验和问题定位。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/user"
+      method: "get"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：适合单账号核验、更新前校验和问题定位。
+- 请求路径：`/iam/api/user`
+
+## 调用建议
+
+- 如果你已经知道用户帐号，这是比“查询用户”更直接的单条详情接口。
+- 适合作为修改用户、启停用户和修改密码前的前置校验。

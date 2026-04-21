@@ -1,0 +1,38 @@
+---
+title: "查询用户"
+description: "按条件查询用户列表。"
+full: true
+api:
+  group: "用户管理"
+  groupHref: "/docs/08-API使用手册/API参考/用户管理/概览"
+  method: "GET"
+  path: "/iam/api/users"
+  auth: "Bearer Token"
+  summary: "建议作为用户联调的首条验证接口。"
+  prerequisites:
+    - "已获取 access_token"
+    - "调用方具备用户管理权限"
+  related:
+    - title: "快速开始"
+      href: "/docs/08-API使用手册/快速开始"
+    - title: "认证与请求规范"
+      href: "/docs/08-API使用手册/认证与请求规范"
+    - title: "用户管理概览"
+      href: "/docs/08-API使用手册/API参考/用户管理/概览"
+_openapi:
+  operations:
+    - path: "/iam/api/users"
+      method: "get"
+---
+
+## 接口定位
+
+- 所属能力分组：用户管理
+- 典型用途：建议作为用户联调的首条验证接口。
+- 请求路径：`/iam/api/users`
+
+## 调用建议
+
+- 首次联调优先调用该接口，确认 Bearer Token 是否有效。
+- 如果只需要获取单个账号详情，可改用“获取用户详情”。
+- 如果需要复杂过滤条件，使用“过滤查询用户”会更直接。
