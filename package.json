@@ -18,9 +18,12 @@
     "images:ingest:dry-run": "node scripts/manage-doc-images.mjs ingest",
     "images:ingest": "node scripts/manage-doc-images.mjs ingest --write --move",
     "images:render:dry-run": "node scripts/manage-doc-images.mjs render",
-    "images:render": "node scripts/manage-doc-images.mjs render --write"
+    "images:render": "node scripts/manage-doc-images.mjs render --write",
+    "images:oss:dry-run": "node scripts/migrate-images-to-oss.mjs",
+    "images:oss:migrate": "node scripts/migrate-images-to-oss.mjs --write"
   },
   "dependencies": {
+    "ali-oss": "^6.23.0",
     "clsx": "latest",
     "fumadocs-core": "15.8.0",
     "fumadocs-mdx": "14.2.0",

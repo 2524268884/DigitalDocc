@@ -9,6 +9,14 @@ const projectRoot = path.dirname(__filename);
 const nextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   outputFileTracingRoot: projectRoot,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'digitalsee-image.oss-cn-beijing.aliyuncs.com',
+      },
+    ],
+  },
   async redirects() {
     try {
       const raw = await fs.readFile(path.join(projectRoot, 'api', 'idaas-api-route-map.json'), 'utf8');
